@@ -9,7 +9,6 @@ ph2 = PH2()
 images = ph2.load_images()
 masks = ph2.load_masks()
 
-
 def get_images_comparison(_lesion_Index):
 
     masked = []
@@ -29,7 +28,7 @@ def get_images_comparison(_lesion_Index):
         if(i != _lesion_Index and diagnoses_symmetry[6] == diagnoses_symmetry[i]):
             similarity_index.append(i) #Saves index of images
             similarity_image.append(images[i])
-            
-    
+        
+    return similarity_image
 
-    return similarity_image 
+get_images_comparison(1)

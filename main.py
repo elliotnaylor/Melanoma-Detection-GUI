@@ -6,6 +6,9 @@ from PIL import Image, ImageTk
 
 import numpy as np
 import cv2
+from core.asymmetry import Asymmetry
+from utils.cv import *
+from utils.xlrd import *
 
 from load_PH2 import PH2
 from score import get_images_comparison
@@ -13,12 +16,17 @@ from score import get_images_comparison
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
-class App(customtkinter.CTk, PH2):
+class App(customtkinter.CTk):
 
     WIDTH = 780
     HEIGHT = 520
 
     IMG_SIZE = (360,360)
+
+    PATH = "C:/Users/scrib/Documents/GitHub/Melanoma-detection-GUI"
+
+    ph2 = PH2()
+    asymmetry = Asymmetry()
 
     def __init__(self):
         super().__init__()
@@ -61,12 +69,12 @@ class App(customtkinter.CTk, PH2):
 
         self.button_2 = customtkinter.CTkButton(master=self.frame_left,
                                                 text="Run",
-                                                command=self.button_event)
+                                                command=self.button_event_run)
         self.button_2.grid(row=3, column=0, pady=10, padx=20)
 
         self.button_3 = customtkinter.CTkButton(master=self.frame_left,
                                                 text="Pictures",
-                                                command=self.button_event)
+                                                command=self.button_event_run)
         self.button_3.grid(row=5, column=0, pady=10, padx=20)
 
         self.label_mode = customtkinter.CTkLabel(master=self.frame_left, text="Appearance Mode:")
@@ -89,9 +97,8 @@ class App(customtkinter.CTk, PH2):
         self.frame_info.grid(row=0, column=0, columnspan=8, rowspan=3, pady=20, padx=20, sticky="nsew")
 
         # ============ frame_info ============
-        PATH = "C:/Users/scrib/Documents/GitHub/melanoma-gui"
 
-        image = Image.open(PATH + "/images/IMD004.bmp")
+        image = Image.open(self.PATH + "/images/IMD004.bmp")
         image.thumbnail(self.IMG_SIZE)
         self.image_main = ImageTk.PhotoImage(image)
         
@@ -143,54 +150,6 @@ class App(customtkinter.CTk, PH2):
                                                      text="Structure")
         self.check_box_5.grid(row=6, column=5, pady=10, padx=20, sticky="w")
 
-
-        self.img_similar = []
-
-        PATH = "C:/Users/scrib/Documents/GitHub/melanoma-gui"
-
-        image_2 = Image.open(PATH + "/images/IMD004.bmp")
-        image_2.thumbnail((100, 100))
-        
-        #Similar skin lesions display, add to "img_similar" to show results
-        self.img_similar.append(ImageTk.PhotoImage(image_2))
-        self.img_similar.append(ImageTk.PhotoImage(image_2))
-        self.img_similar.append(ImageTk.PhotoImage(image_2))
-
-        for i in range(0, len(self.img_similar)):
-
-            self.label_image_2 = tkinter.Label(master=self, image=self.img_similar[i])
-
-            self.label_info_2 = customtkinter.CTkLabel(master=self.frame_right, image=self.img_similar[i],
-                                                        justify=tkinter.LEFT)
-
-            self.label_info_2.grid(column=i+1, row=8, sticky="nwe", padx=15, pady=15)
-
-        #image_list = []
-        #image_grid = []
-
-        #images = Image.open(PATH + "/images/IMD004.bmp")
-        #images.thumbnail((100, 100))
-        #images_tk = ImageTk.PhotoImage(images)
-
-        # configure grid layout (1x1)
-        #self.frame_info.rowconfigure(0, weight=1)
-        #self.frame_info.columnconfigure(0, weight=1)
-
-        #label_image_2 = tkinter.Label(master=self, image=self.image_main)
-
-        #img_grid = customtkinter.CTkLabel(master=self.frame_right, image=images_tk, justify=tkinter.LEFT)
-
-        #img_grid.grid(row=8, column=1, columnspan=5, pady=20, padx=20, sticky="nwe")
-        #for i in range(5):
-            #pass
-            
-            #images.append(ImageTk.PhotoImage(image_list[i]))
-
-            #image_grid.append(customtkinter.CTkLabel(master=self.frame_right, image=images_tk, justify=tkinter.LEFT))  # font name and size in px
-
-            #img_grid.grid(row=8, column=i, columnspan=2, pady=20, padx=20, sticky="we")
-
-
     def button_event_load(self):
         global select
         global original
@@ -213,17 +172,62 @@ class App(customtkinter.CTk, PH2):
 
             hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
             
-            
-
             self.image_main=tkimage
-            self.label_info_1.config(image=tkimage)
+            self.label_info_1.configure(image=tkimage)
         except:
             return
 
-    def button_event(self):
+    def button_event_run(self):
         print("button pressed")
-        images = get_images_comparison(6)
-        pass
+
+        images_tk = self.ph2.load_images_tk()
+        images = self.ph2.load_images()
+        masks = self.ph2.load_masks()
+
+        #image_2 = Image.open(self.PATH + "/images/IMD004.bmp")
+        #image_2.thumbnail((100, 100))
+
+        masked = []
+        for i in range(0, len(images)):
+            element = apply_mask_cv(images[i], masks[i])
+            masked.append(element)
+
+        
+        
+        self.img_similar = []
+
+        #images = get_images_comparison(6)
+        #Similar skin lesions display, add to "img_similar" to show results
+        self.img_similar.append(ImageTk.PhotoImage(images_tk[10]))
+
+
+        data = []
+        dataX = []
+        dataY = []
+        #run()
+        
+        for i in range(0, 200):
+            dataH, dataV, asymmetry = self.asymmetry.run(images[i], masked[i], masks[i])
+            data.append(asymmetry)
+            print(asymmetry)
+            dataX.append(dataH)
+            dataY.append(dataV)
+            print(i)
+
+        book = xlwt.Workbook()
+        #save_output2d(dataX, 'Horizontal', book)
+        #save_output2d(dataY, 'Vertical', book)
+        save_output1d(data, 'Results', book)
+        book.save('output.xls')
+
+        for i in range(0, len(self.img_similar)):
+
+            self.label_image_2 = tkinter.Label(master=self, image=self.img_similar[i])
+
+            self.label_info_2 = customtkinter.CTkLabel(master=self.frame_right, image=self.img_similar[i],
+                                                        justify=tkinter.LEFT)
+
+            self.label_info_2.grid(column=i+1, row=8, sticky="nwe", padx=5, pady=5)
 
     def change_appearance_mode(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -231,7 +235,7 @@ class App(customtkinter.CTk, PH2):
     def on_closing(self, event=0):
         self.destroy()
 
-
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+

@@ -4,6 +4,9 @@ import os
 import xlrd
 import math
 from utils.cv import *
+from PIL import Image, ImageTk
+
+import xlwt
 
 class PH2:
 
@@ -11,7 +14,7 @@ class PH2:
 
     workbook = []
     sheet = []
-
+    
     def __init__(self):
         #Load Excel file
 
@@ -28,6 +31,22 @@ class PH2:
 
     def mask_path(self, index):
         return os.path.join(self.path_images, index + '\\' + index +  '_lesion\\' + index + '_lesion.bmp')
+
+    def load_images_tk(self):
+        images = []
+
+        #13 being starting point of names in the ph2 spreadsheet
+        for i in range(13, self.sheet.nrows):
+            index = self.sheet.cell_value(i, 0)
+
+            path = self.image_path(index)
+            img_element = Image.open(path)
+
+            img_element.thumbnail((100, 100))
+
+            images.append(img_element)
+
+        return images
 
     def load_images(self):
         images = []
@@ -94,6 +113,8 @@ class PH2:
             colours.append(new)
     
         return colours
+
+        workbook.save('output.xls')
 
 class PH2_extend:
 
@@ -165,3 +186,4 @@ class PH2_extend:
 
     def expert_masks():
         pass
+

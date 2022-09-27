@@ -6,6 +6,8 @@ import math
 from utils.cv import *
 from PIL import Image, ImageTk
 
+import os
+
 import xlwt
 
 class PH2:
@@ -16,10 +18,12 @@ class PH2:
     sheet = []
     
     def __init__(self):
-        #Load Excel file
+        xlrd.xlsx.ensure_elementtree_imported(False, None)
+        xlrd.xlsx.Element_has_iter = True
 
-        path_xl = 'D:\\Datasets\PH2Dataset\PH2_dataset.xlsx'
-        path_images = 'D:\\Datasets\PH2Dataset\PH2 Dataset images'
+        #Load Excel file
+        path_xl = os.path.join(os.getcwd() + '/../../Datasets/PH2Dataset/PH2_dataset.xlsx')
+        path_images = os.path.join(os.getcwd() + '/../../Datasets/PH2Dataset/PH2 Dataset images')
         
         self.workbook = xlrd.open_workbook(path_xl)
         self.sheet = self.workbook.sheet_by_index(0)
@@ -27,10 +31,10 @@ class PH2:
         self.path_images = path_images
     
     def image_path(self, index):
-        return os.path.join(self.path_images, index + '\\' + index +  '_Dermoscopic_Image\\' + index + '.bmp')
+        return os.path.join(self.path_images, index + '/' + index +  '_Dermoscopic_Image/' + index + '.bmp')
 
     def mask_path(self, index):
-        return os.path.join(self.path_images, index + '\\' + index +  '_lesion\\' + index + '_lesion.bmp')
+        return os.path.join(self.path_images, index + '/' + index +  '_lesion/' + index + '_lesion.bmp')
 
     def load_images_tk(self):
         images = []
@@ -97,6 +101,52 @@ class PH2:
             asymmetry.append(self.sheet.cell_value(j, 5)) #Gets name of diagnoses (Common Nevus, Atypical Nevus, Melanoma)
 
         return asymmetry
+
+    def load_test_data(self, path, n_sheet):
+        
+        temp_array = []
+        xtrain = []
+        ytrain = []
+
+        workbook = xlrd.open_workbook(path)
+        sheet_horizontal = workbook.sheet_by_index(n_sheet)
+        
+        #sheet_vertical = workbook.sheet_by_index(0)
+
+        for i in range(0, sheet_horizontal.nrows):
+            if sheet_horizontal.cell_value(i, 0) != 1:
+                j = 1
+                value = sheet_horizontal.cell_value(i, j)
+                temp_array = []
+
+                while value != "" and j <= 252:
+
+                    temp_array.append(value)
+                    ytrain.append(sheet_horizontal.cell_value(i, 0))
+                    
+                    j += 1
+                    value = sheet_horizontal.cell_value(i, j)
+
+                amount = j
+
+                for k in range(0, len(temp_array)):
+
+                    xtrain.append([100 / amount * k, temp_array[k]])
+
+
+
+                #xtrain.append(temp_array)
+        
+        return xtrain, ytrain
+
+        #for i in range(0, len(ground)):
+        #    if ground[i] == 0:
+        #        for j in range(i, sheet.ncols):
+        #            xtrain[i].append(sheet.cell_value(i, j))
+        #    elif ground[i] == 2:
+        #        for j in range(i, sheet.ncols):
+        #            ytrain[i].append(sheet.cell_value(i, j))
+
     
     #Gets colour values for each lesion from PH2 xl file
     def load_colours(self):

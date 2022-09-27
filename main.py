@@ -13,8 +13,18 @@ from utils.xlrd import *
 from load_PH2 import PH2
 from score import get_images_comparison
 
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+from sklearn.inspection import DecisionBoundaryDisplay
+
+import matplotlib.pyplot as plt
+
+import os
+
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
 
 class App(customtkinter.CTk):
 
@@ -23,7 +33,7 @@ class App(customtkinter.CTk):
 
     IMG_SIZE = (360,360)
 
-    PATH = "C:/Users/scrib/Documents/GitHub/Melanoma-detection-GUI"
+    PATH = os.getcwd()
 
     ph2 = PH2()
     asymmetry = Asymmetry()
@@ -69,7 +79,7 @@ class App(customtkinter.CTk):
 
         self.button_2 = customtkinter.CTkButton(master=self.frame_left,
                                                 text="Run",
-                                                command=self.button_event_run)
+                                                command=self.button_event_svm)
         self.button_2.grid(row=3, column=0, pady=10, padx=20)
 
         self.button_3 = customtkinter.CTkButton(master=self.frame_left,
@@ -206,17 +216,16 @@ class App(customtkinter.CTk):
         dataY = []
         #run()
         
-        for i in range(0, 200):
+        for i in range(150, 200):
             dataH, dataV, asymmetry = self.asymmetry.run(images[i], masked[i], masks[i])
             data.append(asymmetry)
             print(asymmetry)
             dataX.append(dataH)
             dataY.append(dataV)
-            print(i)
 
         book = xlwt.Workbook()
-        #save_output2d(dataX, 'Horizontal', book)
-        #save_output2d(dataY, 'Vertical', book)
+        save_output2d(dataX, 'Horizontal', book)
+        save_output2d(dataY, 'Vertical', book)
         save_output1d(data, 'Results', book)
         book.save('output.xls')
 
@@ -228,6 +237,47 @@ class App(customtkinter.CTk):
                                                         justify=tkinter.LEFT)
 
             self.label_info_2.grid(column=i+1, row=8, sticky="nwe", padx=5, pady=5)
+
+    def button_event_svm(self):
+        path = os.path.join(os.getcwd() + '/SVM test data.xls')
+        x, y = self.ph2.load_test_data(path, 1)
+        #x2, y2 = self.ph2.load_test_data(path, 2)
+        clf = make_pipeline(StandardScaler(), SVC(kernel = 'rbf', gamma='auto'))
+        model = clf.fit(x, y)
+    
+        #clf.predict(x2, y2)
+        
+        print(accuracy_score(y, clf.predict(x)))
+    
+
+        x = np.array(x)
+
+        x_sep, y_sep = [], []
+        for i in range(len(x)):
+            if y[i] != 3:
+                y_sep.append(x[i][0])
+                x_sep.append(x[i][1])
+
+        x0, x1 = x[:, 0], x[:, 1]
+
+        fig, ax = plt.subplots()
+        
+        disp = DecisionBoundaryDisplay.from_estimator(
+            clf,
+            x,
+            response_method="predict",
+            cmap=plt.cm.coolwarm,
+            alpha=0.8,
+            ax=ax
+        )
+
+        ax.scatter(x0, x1, c=y, cmap=plt.cm.coolwarm, s=5, edgecolors='k', linewidth=0.5)
+        ax.set_xticks(())
+        ax.set_yticks(())
+        ax.set_title('SVM with RBF Kernel for Colour Asymmetry Detection')
+        ax.set_xlabel('Size of Skin Lesion (100 / sample_size * i)')
+        ax.set_ylabel('Colour difference (3D euclidean distance)')
+        plt.show()
 
     def change_appearance_mode(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)

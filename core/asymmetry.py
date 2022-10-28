@@ -153,8 +153,8 @@ class Asymmetry:
                     h = h_2
                     index = j
 
-            if is_opposite:
-                locations_2.pop(index) # Prevent an area from being chosen twice
+            if is_opposite and len(difference) < 255: #xlms limit, should change in the future
+                locations_2.pop(index) #Prevent an area from being chosen twice
                 
                 #Measuring the euclidean distance of the 2 colours to find which colours are a noticable difference
                 #JND = square_root((L_b1 - L_b2)^2 + (A_b1 - A_b2)^2 + (B_b1 - B_b2)^2)

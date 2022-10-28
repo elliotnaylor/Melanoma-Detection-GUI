@@ -52,31 +52,38 @@ class PH2:
 
         return images
 
+    def load_single_image(self, number):
+        index = self.sheet.cell_value(13 + number, 0)
+        print(str(index))
+        path = self.image_path(index)
+        img = load_img_cv(path)
+        
+        return img
+
     def load_images(self):
         images = []
 
         #13 being starting point of names in the ph2 spreadsheet
-        for i in range(13, self.sheet.nrows):
-            index = self.sheet.cell_value(i, 0)
-
-            path = self.image_path(index)
-            img_element = load_img_cv(path)
-            
-            images.append(img_element)
+        for i in range(0, self.sheet.nrows - 13):
+            images.append(self.load_single_image(i))
 
         return images
+    
+    def load_single_mask(self, number):
+        index = self.sheet.cell_value(13 + number, 0)
+
+        path = self.mask_path(index)
+        mask = load_img_cv(path)
+
+        return mask 
 
     def load_masks(self):
         masks = []
 
         #13 being starting point of names in the ph2 spreadsheet
-        for i in range(13, self.sheet.nrows):
-            index = self.sheet.cell_value(i, 0)
+        for i in range(13, self.sheet.nrows - 13):
 
-            path = self.mask_path(index)
-            mask_element = load_img_cv(path)
-            
-            masks.append(mask_element)
+            masks.append(self.load_single_mask(i))
 
         return masks
 
@@ -99,46 +106,53 @@ class PH2:
         #List of clinical diagnoses
         for j in range(13, self.sheet.nrows):
             asymmetry.append(self.sheet.cell_value(j, 5)) #Gets name of diagnoses (Common Nevus, Atypical Nevus, Melanoma)
-
+        
         return asymmetry
 
-    def load_test_data(self, path, n_sheet):
+    def load_test_data(self, path):
         
         temp_array = []
         xtrain = []
         ytrain = []
 
         workbook = xlrd.open_workbook(path)
-        sheet_horizontal = workbook.sheet_by_index(n_sheet)
-        
-        #sheet_vertical = workbook.sheet_by_index(0)
+        sheet_horizontal = workbook.sheet_by_index(0)
+        sheet_vertical = workbook.sheet_by_index(1)
+        ground = workbook.sheet_by_index(2)
 
         for i in range(0, sheet_horizontal.nrows):
-            if sheet_horizontal.cell_value(i, 0) != 1:
-                j = 1
-                value = sheet_horizontal.cell_value(i, j)
+            if ground.cell_value(i, 0) != 1:
+
+                j, k = 0, 0
+                h_value = sheet_horizontal.cell_value(i, j)
+                v_value = sheet_vertical.cell_value(i, j)
                 temp_array = []
 
-                while value != "" and j <= 252:
-
-                    temp_array.append(value)
-                    ytrain.append(sheet_horizontal.cell_value(i, 0))
+                while h_value != "" and j < sheet_horizontal.ncols - 1:   
+                    temp_array.append(h_value)
+                    ytrain.append(ground.cell_value(i, 0))
                     
                     j += 1
-                    value = sheet_horizontal.cell_value(i, j)
+                    h_value = sheet_horizontal.cell_value(i, j)
 
-                amount = j
+                while v_value != "" and k < sheet_vertical.ncols - 1:   
+                    temp_array.append(v_value)
+                    ytrain.append(ground.cell_value(i, 0))
+                    
+                    k += 1
+                    v_value = sheet_vertical.cell_value(i, k)
 
-                for k in range(0, len(temp_array)):
+                #temp_array = np.array(temp_array)
+                #temp_array = temp_array[temp_array <= 25]
+                temp_array.sort() #Sorts in ascending order
 
-                    xtrain.append([100 / amount * k, temp_array[k]])
+                for l in range(0, len(temp_array)):
 
-
+                    xtrain.append([100 / len(temp_array) * l, temp_array[l]])
 
                 #xtrain.append(temp_array)
         
         return xtrain, ytrain
-
         #for i in range(0, len(ground)):
         #    if ground[i] == 0:
         #        for j in range(i, sheet.ncols):

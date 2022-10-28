@@ -8,10 +8,10 @@ import numpy as np
 import cv2
 from core.asymmetry import Asymmetry
 from utils.cv import *
+from utils.plot import draw_svm_boundries
 from utils.xlrd import *
 
 from load_PH2 import PH2
-from score import get_images_comparison
 
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -37,6 +37,8 @@ class App(customtkinter.CTk):
 
     ph2 = PH2()
     asymmetry = Asymmetry()
+
+    model = []
 
     def __init__(self):
         super().__init__()
@@ -78,14 +80,19 @@ class App(customtkinter.CTk):
         self.button_1.grid(row=2, column=0, pady=10, padx=20)
 
         self.button_2 = customtkinter.CTkButton(master=self.frame_left,
-                                                text="Run",
+                                                text="Load dataset",
                                                 command=self.button_event_svm)
         self.button_2.grid(row=3, column=0, pady=10, padx=20)
 
         self.button_3 = customtkinter.CTkButton(master=self.frame_left,
+                                                text="Asymmetry",
+                                                command=self.button_asymmetry)
+        self.button_3.grid(row=4, column=0, pady=10, padx=20)
+
+        self.button_4 = customtkinter.CTkButton(master=self.frame_left,
                                                 text="Pictures",
                                                 command=self.button_event_run)
-        self.button_3.grid(row=5, column=0, pady=10, padx=20)
+        self.button_4.grid(row=5, column=0, pady=10, padx=20)
 
         self.label_mode = customtkinter.CTkLabel(master=self.frame_left, text="Appearance Mode:")
         self.label_mode.grid(row=9, column=0, pady=0, padx=20, sticky="w")
@@ -160,6 +167,8 @@ class App(customtkinter.CTk):
                                                      text="Structure")
         self.check_box_5.grid(row=6, column=5, pady=10, padx=20, sticky="w")
 
+        self.button_event_svm() #Run on start?
+
     def button_event_load(self):
         global select
         global original
@@ -181,14 +190,75 @@ class App(customtkinter.CTk):
             img_rgb = np.array(im)
 
             hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
-            
+
+
+
             self.image_main=tkimage
             self.label_info_1.configure(image=tkimage)
+
         except:
             return
 
+    def button_asymmetry(self):
+        print("Asymmetry pressed")
+
+        v_data, h_data = [], []
+
+        #1. Segment skin lesion
+        images = self.ph2.load_images()
+        masks = self.ph2.load_masks()
+
+        #2. Apply mask to skin lesion
+        for i in range(0, 200):
+            masked = apply_mask_cv(images[i], masks[i])
+
+            dataH, dataV, asymmetry = self.asymmetry.run(images[i], masked, masks[i])
+
+            dataV.sort()
+            dataH.sort() #Sorts in ascending order
+
+            vertical = []
+            horizontal = []
+
+        #4. Add Y value based on number of values
+            for i in range(0, len(dataV)):
+
+                vertical.append([100 / len(dataV) * i, dataV[i]])
+
+            for i in range(0, len(dataH)):
+
+                horizontal.append([100 / len(dataH) * i, dataH[i]])
+
+            #4. predict using model
+            v_prd = self.model.predict(vertical)
+            h_prd = self.model.predict(horizontal)
+
+            vertical_sym, horizontal_sym = 0,0
+        
+            for v in v_prd:
+                if v == 0:
+                    vertical_sym += 1
+                elif v == 2:
+                    vertical_sym -= 1
+
+            for h in h_prd:
+                if h == 0:
+                    horizontal_sym += 1
+                elif h == 2:
+                    horizontal_sym -= 1
+
+            v_data.append(vertical_sym)
+            h_data.append(horizontal_sym)
+
+        book = xlwt.Workbook()
+        save_output1d(v_data, 'Vertical', book)
+        save_output1d(h_data, 'Horizontal', book)
+        book.save('output_final.xls')
+        pass
+        
+        
     def button_event_run(self):
-        print("button pressed")
+        print("Run pressed")
 
         images_tk = self.ph2.load_images_tk()
         images = self.ph2.load_images()
@@ -201,22 +271,18 @@ class App(customtkinter.CTk):
         for i in range(0, len(images)):
             element = apply_mask_cv(images[i], masks[i])
             masked.append(element)
-
-        
         
         self.img_similar = []
 
-        #images = get_images_comparison(6)
         #Similar skin lesions display, add to "img_similar" to show results
         self.img_similar.append(ImageTk.PhotoImage(images_tk[10]))
-
 
         data = []
         dataX = []
         dataY = []
         #run()
         
-        for i in range(150, 200):
+        for i in range(0, 200):
             dataH, dataV, asymmetry = self.asymmetry.run(images[i], masked[i], masks[i])
             data.append(asymmetry)
             print(asymmetry)
@@ -238,46 +304,26 @@ class App(customtkinter.CTk):
 
             self.label_info_2.grid(column=i+1, row=8, sticky="nwe", padx=5, pady=5)
 
+    #Train an SVM with pre-processed data saved into an .xls file (Saves processing time)
     def button_event_svm(self):
-        path = os.path.join(os.getcwd() + '/SVM test data.xls')
-        x, y = self.ph2.load_test_data(path, 1)
-        #x2, y2 = self.ph2.load_test_data(path, 2)
+
+        path = os.path.join(os.getcwd() + '/output.xls')#'/SVM test data.xls')
+        path_test = os.path.join(os.getcwd() + '/output_test.xls')#'/SVM test data.xls')
+
+        xtrain, ytrain = self.ph2.load_test_data(path)
+        xtest, ytest = self.ph2.load_test_data(path_test)
+
         clf = make_pipeline(StandardScaler(), SVC(kernel = 'rbf', gamma='auto'))
-        model = clf.fit(x, y)
-    
-        #clf.predict(x2, y2)
+        self.model = clf.fit(xtrain, ytrain)
+
+        print('Training accuracy: ' + str(accuracy_score(ytrain, clf.predict(xtrain))))
+        print('Validation accuracy: ' + str(accuracy_score(ytest, clf.predict(xtest))))
+
+        xtrain = np.array(xtrain)
+        xtest = np.array(xtest)
         
-        print(accuracy_score(y, clf.predict(x)))
-    
-
-        x = np.array(x)
-
-        x_sep, y_sep = [], []
-        for i in range(len(x)):
-            if y[i] != 3:
-                y_sep.append(x[i][0])
-                x_sep.append(x[i][1])
-
-        x0, x1 = x[:, 0], x[:, 1]
-
-        fig, ax = plt.subplots()
-        
-        disp = DecisionBoundaryDisplay.from_estimator(
-            clf,
-            x,
-            response_method="predict",
-            cmap=plt.cm.coolwarm,
-            alpha=0.8,
-            ax=ax
-        )
-
-        ax.scatter(x0, x1, c=y, cmap=plt.cm.coolwarm, s=5, edgecolors='k', linewidth=0.5)
-        ax.set_xticks(())
-        ax.set_yticks(())
-        ax.set_title('SVM with RBF Kernel for Colour Asymmetry Detection')
-        ax.set_xlabel('Size of Skin Lesion (100 / sample_size * i)')
-        ax.set_ylabel('Colour difference (3D euclidean distance)')
-        plt.show()
+        draw_svm_boundries(clf, xtrain, ytrain)
+        draw_svm_boundries(clf, xtest, ytest)
 
     def change_appearance_mode(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)

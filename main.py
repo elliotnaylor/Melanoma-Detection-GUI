@@ -313,17 +313,25 @@ class App(customtkinter.CTk):
         xtrain, ytrain = self.ph2.load_test_data(path)
         xtest, ytest = self.ph2.load_test_data(path_test)
 
+        newxtrain = []
+        newytrain = []
+        for i in range(0, len(xtrain)):
+            if xtrain[i][0] >= 95:
+                newxtrain.append([xtrain[i][0], xtrain[i][1]])
+                newytrain.append(ytrain[i])
+
+
         clf = make_pipeline(StandardScaler(), SVC(kernel = 'rbf', gamma='auto'))
-        self.model = clf.fit(xtrain, ytrain)
+        self.model = clf.fit(newxtrain, newytrain)
 
-        print('Training accuracy: ' + str(accuracy_score(ytrain, clf.predict(xtrain))))
-        print('Validation accuracy: ' + str(accuracy_score(ytest, clf.predict(xtest))))
+        print('Training accuracy: ' + str(accuracy_score(newytrain, clf.predict(newxtrain))))
+        #print('Validation accuracy: ' + str(accuracy_score(ytest, clf.predict(xtest))))
 
-        xtrain = np.array(xtrain)
-        xtest = np.array(xtest)
+        newxtrain = np.array(newxtrain)
+        #xtest = np.array(xtest)
         
-        draw_svm_boundries(clf, xtrain, ytrain)
-        draw_svm_boundries(clf, xtest, ytest)
+        draw_svm_boundries(clf, newxtrain, newytrain)
+        #draw_svm_boundries(clf, xtest, ytest)
 
     def change_appearance_mode(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)

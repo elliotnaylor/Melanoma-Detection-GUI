@@ -18,6 +18,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.inspection import DecisionBoundaryDisplay
+import pickle
+from joblib import dump, load
 
 import matplotlib.pyplot as plt
 
@@ -37,6 +39,15 @@ class App(customtkinter.CTk):
 
     ph2 = PH2()
     asymmetry = Asymmetry()
+
+
+    images = ph2.load_images()
+    masks = ph2.load_masks()
+
+    masked = []
+
+    for i in range(0, 187):
+        masked.append(apply_mask_cv(images[i], masks[i]))
 
     model = []
 
@@ -59,13 +70,13 @@ class App(customtkinter.CTk):
         self.frame_left.grid(row=0, column=0, sticky="nswe")
 
         self.frame_right = customtkinter.CTkFrame(master=self)
-        self.frame_right.grid(row=0, column=1, sticky="nswe", padx=20, pady=20)
+        self.frame_right.grid(row=0, column=1, sticky="nswe")
 
         # ============ frame_left ============
 
         # configure grid layout (1x11)
         self.frame_left.grid_rowconfigure(0, minsize=10)   # empty row with minsize as spacing
-        self.frame_left.grid_rowconfigure(5, weight=1)  # empty row as spacing
+        self.frame_left.grid_rowconfigure(6, weight=1)  # empty row as spacing
         self.frame_left.grid_rowconfigure(8, minsize=20)    # empty row with minsize as spacing
         self.frame_left.grid_rowconfigure(11, minsize=10)  # empty row with minsize as spacing
 
@@ -77,22 +88,27 @@ class App(customtkinter.CTk):
         self.button_1 = customtkinter.CTkButton(master=self.frame_left,
                                                 text="Load Image",
                                                 command=self.button_event_load)
-        self.button_1.grid(row=2, column=0, pady=10, padx=20)
+        self.button_1.grid(row=2, column=0, pady=20, padx=20)
 
         self.button_2 = customtkinter.CTkButton(master=self.frame_left,
-                                                text="Load dataset",
-                                                command=self.button_event_svm)
-        self.button_2.grid(row=3, column=0, pady=10, padx=20)
-
-        self.button_3 = customtkinter.CTkButton(master=self.frame_left,
                                                 text="Asymmetry",
-                                                command=self.button_asymmetry)
-        self.button_3.grid(row=4, column=0, pady=10, padx=20)
+                                                command=self.load_asymmetry)
+        self.button_2.grid(row=3, column=0)
+        
+        self.button_3= customtkinter.CTkButton(master=self.frame_left,
+                                                text="Border",
+                                                command=self.load_border)
+        self.button_3.grid(row=4, column=0)
 
-        self.button_4 = customtkinter.CTkButton(master=self.frame_left,
-                                                text="Pictures",
-                                                command=self.button_event_run)
-        self.button_4.grid(row=5, column=0, pady=10, padx=20)
+        self.button_4= customtkinter.CTkButton(master=self.frame_left,
+                                                text="Colour",
+                                                command=self.load_colour)
+        self.button_4.grid(row=5, column=0)
+
+        self.button_5= customtkinter.CTkButton(master=self.frame_left,
+                                                text="Similarity",
+                                                command=self.load_similarity)
+        self.button_5.grid(row=6, column=0)
 
         self.label_mode = customtkinter.CTkLabel(master=self.frame_left, text="Appearance Mode:")
         self.label_mode.grid(row=9, column=0, pady=0, padx=20, sticky="w")
@@ -100,6 +116,7 @@ class App(customtkinter.CTk):
         self.optionmenu_1 = customtkinter.CTkOptionMenu(master=self.frame_left,
                                                         values=["Light", "Dark", "System"],
                                                         command=self.change_appearance_mode)
+
         self.optionmenu_1.grid(row=10, column=0, pady=10, padx=20, sticky="w")
 
         # ============ frame_right ============
@@ -111,14 +128,14 @@ class App(customtkinter.CTk):
         self.frame_right.columnconfigure(2, weight=0)
 
         self.frame_info = customtkinter.CTkFrame(master=self.frame_right)
-        self.frame_info.grid(row=0, column=0, columnspan=8, rowspan=3, pady=20, padx=20, sticky="nsew")
+        self.frame_info.grid(row=0, column=0, columnspan=8, rowspan=3, sticky="nsew")
 
         # ============ frame_info ============
 
         image = Image.open(self.PATH + "/images/IMD004.bmp")
         image.thumbnail(self.IMG_SIZE)
         self.image_main = ImageTk.PhotoImage(image)
-        
+
         # configure grid layout (1x1)
         self.frame_info.rowconfigure(0, weight=1)
         self.frame_info.columnconfigure(0, weight=1)
@@ -130,45 +147,26 @@ class App(customtkinter.CTk):
                                                    )
         self.label_info_1.grid(column=0, row=0, sticky="nwe", padx=15, pady=15)
 
-        self.progressbar = customtkinter.CTkProgressBar(master=self.frame_info)
-        self.progressbar.grid(row=1, column=0, sticky="ew", padx=15, pady=15)
+        #self.button_event_run()
+        self.button_event_load_model()
 
-        # ============ frame_right ============
+    def load_asymmetry(self):
 
-        self.radio_var = tkinter.IntVar(value=0)
+        self.asymmetry.run(self.images[0], self.masked[0], self.masks[0])
+    
+        
 
-        self.check_box_1 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                     variable=self.radio_var,
-                                                     value=0,
-                                                     text="None")
-        self.check_box_1.grid(row=6, column=1, pady=10, padx=20, sticky="w")
+    def load_border(self):
+        pass
 
-        self.check_box_2 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                     variable=self.radio_var,
-                                                     value=1,
-                                                     text="Asymmetry")
-        self.check_box_2.grid(row=6, column=2, pady=10, padx=20, sticky="w")
+    def load_colour(self):
+        pass
 
-        self.check_box_3 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                     variable=self.radio_var,
-                                                     value=2,
-                                                     text="Border")
-        self.check_box_3.grid(row=6, column=3, pady=10, padx=20, sticky="w")
-
-        self.check_box_4 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                     variable=self.radio_var,
-                                                     value=3,
-                                                     text="Colour")
-        self.check_box_4.grid(row=6, column=4, pady=10, padx=20, sticky="w")
-
-        self.check_box_5 = customtkinter.CTkRadioButton(master=self.frame_right,
-                                                     variable=self.radio_var,
-                                                     value=4,
-                                                     text="Structure")
-        self.check_box_5.grid(row=6, column=5, pady=10, padx=20, sticky="w")
-
-        self.button_event_svm() #Run on start?
-
+    def load_similarity(self):
+        pass
+    
+    #Currently loads image from file
+    #Should instead load from index in dataset
     def button_event_load(self):
         global select
         global original
@@ -190,8 +188,6 @@ class App(customtkinter.CTk):
             img_rgb = np.array(im)
 
             hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
-
-
 
             self.image_main=tkimage
             self.label_info_1.configure(image=tkimage)
@@ -254,8 +250,7 @@ class App(customtkinter.CTk):
         save_output1d(v_data, 'Vertical', book)
         save_output1d(h_data, 'Horizontal', book)
         book.save('output_final.xls')
-        pass
-        
+    
         
     def button_event_run(self):
         print("Run pressed")
@@ -268,7 +263,7 @@ class App(customtkinter.CTk):
         #image_2.thumbnail((100, 100))
 
         masked = []
-        for i in range(0, len(images)):
+        for i in range(0, len(masks)):
             element = apply_mask_cv(images[i], masks[i])
             masked.append(element)
         
@@ -305,14 +300,15 @@ class App(customtkinter.CTk):
             self.label_info_2.grid(column=i+1, row=8, sticky="nwe", padx=5, pady=5)
 
     #Train an SVM with pre-processed data saved into an .xls file (Saves processing time)
-    def button_event_svm(self):
+    def button_event_load_model(self): 
 
         path = os.path.join(os.getcwd() + '/output.xls')#'/SVM test data.xls')
         path_test = os.path.join(os.getcwd() + '/output_test.xls')#'/SVM test data.xls')
 
-        xtrain, ytrain = self.ph2.load_test_data(path)
-        xtest, ytest = self.ph2.load_test_data(path_test)
+        index, xtrain, ytrain = self.ph2.load_test_data(path)
+        index, xtest, ytest = self.ph2.load_test_data(path_test)
 
+<<<<<<< Updated upstream
         newxtrain = []
         newytrain = []
         for i in range(0, len(xtrain)):
@@ -332,6 +328,23 @@ class App(customtkinter.CTk):
         
         draw_svm_boundries(clf, newxtrain, newytrain)
         #draw_svm_boundries(clf, xtest, ytest)
+=======
+        #clf = make_pipeline(StandardScaler(), SVC(kernel = 'rbf', gamma='auto'))
+        #self.model = clf.fit(xtrain, ytrain)
+
+        #print('Training accuracy: ' + str(accuracy_score(ytrain, clf.predict(xtrain))))
+        #print('Validation accuracy: ' + str(accuracy_score(ytest, clf.predict(xtest))))
+        
+        with open('model.pkl', 'rb') as f:
+            clf2 = pickle.load(f)
+
+        #Load SVM model
+        xtrain = np.array(xtrain)
+        xtest = np.array(xtest)
+
+        #draw_svm_boundries(clf2, xtrain, ytrain)
+        #draw_svm_boundries(clf2, xtest, ytest)
+>>>>>>> Stashed changes
 
     def change_appearance_mode(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)

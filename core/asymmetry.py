@@ -12,13 +12,14 @@ from utils.numpy import *
 from utils.plot import *
 
 import mahotas
+import PIL
 
 class Asymmetry:
 
     DISTANCE_THRESH = 40
     THRESH = 20
     score = 100 #Starting score
-
+    
     #https://www.pyimagesearch.com/2017/01/02/rotate-images-correctly-with-opencv-and-python
 
     def superpixel_centroids(self, image, mask, number_segments):
@@ -109,7 +110,7 @@ class Asymmetry:
         #draw_image(v_sub)
 
         #Mirror results of images and combine (Only visual)
-        #h_symm = Image.new('GREY', h_sub.shape[0], h_sub.shape[1]*2)
+        #h_symm = PIL.new('GREY', h_sub.shape[0], h_sub.shape[1]*2)
         #h_symm.paste(h_sub, (0,0))
         #h_symm.paste(cv2.flip(h_sub, 0), (0, h_sub.shape[1]))
 
@@ -164,12 +165,11 @@ class Asymmetry:
                 difference.append(dis)
                 positions.append((h, h_1))
 
-                #temp = image
-                #cv2.circle(temp, h, 5,[0,0,255],-1)
-                #cv2.circle(temp, h_1, 5,[0,255,255],-1)
-                #draw_image(temp)
-
-
+                temp = image
+                cv2.circle(temp, h, 5,[0,0,255],-1)
+                cv2.circle(temp, h_1, 5,[0,255,255],-1)
+                draw_image(temp)
+                
         return difference, positions
 
     def TextureSymmetry():
@@ -217,3 +217,4 @@ class Asymmetry:
         #draw_comparison(h_colour, v_colour, self.THRESH)
 
         return h_colour, v_colour, asymmetry
+

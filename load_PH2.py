@@ -114,6 +114,7 @@ class PH2:
         temp_array = []
         xtrain = []
         ytrain = []
+        index = []
 
         workbook = xlrd.open_workbook(path)
         sheet_horizontal = workbook.sheet_by_index(0)
@@ -149,10 +150,10 @@ class PH2:
                 for l in range(0, len(temp_array)):
 
                     xtrain.append([100 / len(temp_array) * l, temp_array[l]])
-
+                    index.append(i)
                 #xtrain.append(temp_array)
         
-        return xtrain, ytrain
+        return index, xtrain, ytrain
         #for i in range(0, len(ground)):
         #    if ground[i] == 0:
         #        for j in range(i, sheet.ncols):
@@ -160,7 +161,52 @@ class PH2:
         #    elif ground[i] == 2:
         #        for j in range(i, sheet.ncols):
         #            ytrain[i].append(sheet.cell_value(i, j))
+    
+    def load_sorted_data(self, path):
+        
+        temp_array = []
+        xtrain = []
+        ytrain = []
+        index = []
 
+        workbook = xlrd.open_workbook(path)
+        sheet_horizontal = workbook.sheet_by_index(0)
+        sheet_vertical = workbook.sheet_by_index(1)
+        ground = workbook.sheet_by_index(2)
+
+        for i in range(0, sheet_horizontal.nrows):
+            if ground.cell_value(i, 0) != 1:
+
+                j, k = 0, 0
+                h_value = sheet_horizontal.cell_value(i, j)
+                v_value = sheet_vertical.cell_value(i, j)
+                temp_array = []
+
+                while h_value != "" and j < sheet_horizontal.ncols - 1:   
+                    temp_array.append(h_value)
+                    ytrain.append(ground.cell_value(i, 0))
+                    
+                    j += 1
+                    h_value = sheet_horizontal.cell_value(i, j)
+
+                while v_value != "" and k < sheet_vertical.ncols - 1:   
+                    temp_array.append(v_value)
+                    ytrain.append(ground.cell_value(i, 0))
+                    
+                    k += 1
+                    v_value = sheet_vertical.cell_value(i, k)
+
+                #temp_array = np.array(temp_array)
+                #temp_array = temp_array[temp_array <= 25]
+                temp_array.sort() #Sorts in ascending order
+
+                for l in range(0, len(temp_array)):
+
+                    xtrain.append([100 / len(temp_array) * l, temp_array[l]])
+                    index.append(i)
+                #xtrain.append(temp_array)
+        
+        return index, xtrain, ytrain
     
     #Gets colour values for each lesion from PH2 xl file
     def load_colours(self):
@@ -179,6 +225,7 @@ class PH2:
         return colours
 
         workbook.save('output.xls')
+
 
 class PH2_extend:
 

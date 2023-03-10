@@ -308,7 +308,6 @@ class App(customtkinter.CTk):
         index, xtrain, ytrain = self.ph2.load_test_data(path)
         index, xtest, ytest = self.ph2.load_test_data(path_test)
 
-<<<<<<< Updated upstream
         newxtrain = []
         newytrain = []
         for i in range(0, len(xtrain)):
@@ -328,7 +327,7 @@ class App(customtkinter.CTk):
         
         draw_svm_boundries(clf, newxtrain, newytrain)
         #draw_svm_boundries(clf, xtest, ytest)
-=======
+
         #clf = make_pipeline(StandardScaler(), SVC(kernel = 'rbf', gamma='auto'))
         #self.model = clf.fit(xtrain, ytrain)
 
@@ -344,7 +343,6 @@ class App(customtkinter.CTk):
 
         #draw_svm_boundries(clf2, xtrain, ytrain)
         #draw_svm_boundries(clf2, xtest, ytest)
->>>>>>> Stashed changes
 
     def change_appearance_mode(self, new_appearance_mode):
         customtkinter.set_appearance_mode(new_appearance_mode)

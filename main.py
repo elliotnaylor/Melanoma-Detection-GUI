@@ -93,22 +93,17 @@ class App(customtkinter.CTk):
         self.button_2 = customtkinter.CTkButton(master=self.frame_left,
                                                 text="Asymmetry",
                                                 command=self.load_asymmetry)
-        self.button_2.grid(row=3, column=0)
+        self.button_2.grid(row=3, column=0, pady=10)
         
         self.button_3= customtkinter.CTkButton(master=self.frame_left,
                                                 text="Border",
                                                 command=self.load_border)
-        self.button_3.grid(row=4, column=0)
+        self.button_3.grid(row=4, column=0, pady=10)
 
         self.button_4= customtkinter.CTkButton(master=self.frame_left,
                                                 text="Colour",
                                                 command=self.load_colour)
-        self.button_4.grid(row=5, column=0)
-
-        self.button_5= customtkinter.CTkButton(master=self.frame_left,
-                                                text="Similarity",
-                                                command=self.load_similarity)
-        self.button_5.grid(row=6, column=0)
+        self.button_4.grid(row=5, column=0, pady=10)
 
         self.label_mode = customtkinter.CTkLabel(master=self.frame_left, text="Appearance Mode:")
         self.label_mode.grid(row=9, column=0, pady=0, padx=20, sticky="w")
@@ -149,6 +144,15 @@ class App(customtkinter.CTk):
 
         #self.button_event_run()
         self.button_event_load_model()
+
+        # create scrollable textbox
+        tk_textbox = tkinter.Text(self, highlightthickness=0)
+        tk_textbox.grid(row=1, column=2, sticky="nsew")
+
+        # create CTk scrollbar
+        ctk_textbox_scrollbar = customtkinter.CTkScrollbar(self, command=tk_textbox.yview)
+        ctk_textbox_scrollbar.grid(row=1, column=3, sticky="ns")
+
 
     def load_asymmetry(self):
 
@@ -354,3 +358,4 @@ if __name__ == "__main__":
     app = App()
     app.mainloop()
 
+    

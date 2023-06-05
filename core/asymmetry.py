@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import math
 from skimage import segmentation, color, measure
+from skimage.segmentation import mark_boundaries
 
 from scipy.spatial import ConvexHull
 
@@ -17,19 +18,33 @@ import PIL
 class Asymmetry:
 
     DISTANCE_THRESH = 40
-    THRESH = 20
+    THRESH = 5.7
     score = 100 #Starting score
     
     #https://www.pyimagesearch.com/2017/01/02/rotate-images-correctly-with-opencv-and-python
 
-    def superpixel_centroids(self, image, mask, number_segments):
+    def superpixel_centroids(self, image, mask, number_segments, compactness=20):
         locations = []
 
         #Find area of skin lesion, change 'n_segments' for less with larger skin lesion and more with smaller (equal segments)
-        
+
+        #whitePixels = np.sum(mask >= 235)
+        #blackPixels = np.sum(mask <= 20)
+
+        #draw_image(mask)
+
+        #Calculates the difference in pixels into a percentage
+        #-1 makes it opposite
+        #difference = abs(min(whitePixels, blackPixels)/max(whitePixels, blackPixels) - 1)
 
         #Use SLIC to generate superpixels and comparecolour on either side of the lesion
-        labels = segmentation.slic(image, compactness=20, n_segments=number_segments) #1500) #Should scale with the size of the lesion
+
+        #scale_inv_segments = round(number_segments * difference)
+
+        #scale = make_even(scale_inv_segments)
+
+        labels = segmentation.slic(image, compactness=compactness, n_segments=number_segments) #1500) #Should scale with the size of the lesion
+        
         superpixels = color.label2rgb(labels, image, kind = 'avg', bg_label = 0) #Average colour of superPixels
         regions = measure.regionprops(labels)
 
@@ -44,6 +59,14 @@ class Asymmetry:
             if mask[x, y] > 0 and y < superpixels.shape[0] and x < superpixels.shape[1]: #regions returns some values outside of the size of the image
                 locations.append((y, x))
         
+        #Display image with regions
+        #for props in regions:
+        #    cy, cx = props.centroid
+        #    plt.plot(cx, cy)
+
+        #plt.imshow(mark_boundaries(image, labels))
+        #plt.show()
+
         return superpixels, locations
 
     def split_positions(self, locations, center, axis):
@@ -161,14 +184,15 @@ class Asymmetry:
                 #JND = square_root((L_b1 - L_b2)^2 + (A_b1 - A_b2)^2 + (B_b1 - B_b2)^2)
                 dis = euclidean3d(image[h[1], h[0]], image[h_1[1], h_1[0]])
 
+                
                 # < 3 = not visible, 3<*< = 6 barely perceptible, > 6 perceptable (visible to the human eye)
                 difference.append(dis)
                 positions.append((h, h_1))
 
-                temp = image
-                cv2.circle(temp, h, 5,[0,0,255],-1)
-                cv2.circle(temp, h_1, 5,[0,255,255],-1)
-                draw_image(temp)
+                #temp = image
+                #cv2.circle(temp, h, 5,[0,0,255],-1)
+                #cv2.circle(temp, h_1, 5,[0,255,255],-1)
+                #draw_image(temp)
                 
         return difference, positions
 
@@ -177,7 +201,7 @@ class Asymmetry:
         #Bag of features
         #Bhattacharyya distance
 
-    def run(self, _image, _masked_image, _mask):
+    def run(self, _image, _masked_image, _mask, compactness = 20):
 
         bgr = _masked_image
         gray = bgr2gray_cv(_masked_image)
@@ -197,10 +221,10 @@ class Asymmetry:
 
         lab = bgr2lab_cv(colour_rotation)
 
-        segment_number = 1500
+        segment_number = 500
 
         #Create superpixels and get the centroids of each within the area of the mask
-        pixels, locations = self.superpixel_centroids(lab, mask_rotation, segment_number)
+        pixels, locations = self.superpixel_centroids(lab, mask_rotation, segment_number, compactness=compactness)
 
         #split the positions along the 
         h_loc1, h_loc2 = self.split_positions(locations, center, 0)
@@ -217,4 +241,5 @@ class Asymmetry:
         #draw_comparison(h_colour, v_colour, self.THRESH)
 
         return h_colour, v_colour, asymmetry
+        
 

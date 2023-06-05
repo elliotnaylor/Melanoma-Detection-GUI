@@ -1,0 +1,111 @@
+from PIL import Image, ImageTk
+
+import numpy as np
+import cv2
+from core.asymmetry import Asymmetry
+from utils.cv import *
+from utils.plot import draw_svm_boundries
+from utils.xlrd import *
+
+from load_PH2 import PH2
+
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+from sklearn.inspection import DecisionBoundaryDisplay
+import pickle
+
+import matplotlib.pyplot as plt
+
+import os
+
+ph2 = PH2()
+a = Asymmetry()
+
+images_tk = ph2.load_images_tk()
+images = ph2.load_images()
+masks = ph2.load_masks()
+ground = ph2.load_asymmetry()
+
+masked = []
+cropped_mask = []
+
+#Crop the image to the white mask border in the image
+for i in range(0, len(masks)):
+    x, y, w, h = crop_mask(masks[i]) #converts to gray, finds non-zero pixels and returns x, y, w, and h
+    cropped_mask.append(masks[i][y:y+h, x:x+w])
+    cropped_img = images[i][y:y+h, x:x+w]
+
+    element = apply_mask_cv(cropped_img, cropped_mask[i])
+    masked.append(element)
+
+    #cv2.imshow("Cropped", masked[i]) # Show it
+    #cv2.waitKey(0)
+
+tds0_mask = []
+tds0_masked = []
+tds1_mask = []
+tds1_masked = []
+tds2_mask = []
+tds2_masked = []
+
+for i in range(0, len(ground)):
+    if ground[i] == 0:
+        tds0_mask.append(cropped_mask[i])
+        tds0_masked.append(masked[i])
+    elif ground[i] == 1:
+        tds1_mask.append(cropped_mask[i])
+        tds1_masked.append(masked[i])
+    elif ground[i] == 2:
+        tds2_mask.append(cropped_mask[i])
+        tds2_masked.append(masked[i])
+
+def asymmetry_combined(tds_masked, tds_mask, compact):
+    data = []
+    dataX = []
+    #for j in range(5, 100, 5):
+    for i in range(0, len(tds_masked)):
+        dataH, dataV, asymmetry = a.run(images[i], tds_masked[i], tds_mask[i], compactness=compact)
+        data.append(asymmetry)
+    
+        print(asymmetry)
+
+        dataX = np.append(dataX, dataH)
+
+    return dataX
+
+score0 = asymmetry_combined(tds0_masked, tds0_mask, 20)
+#score1 = asymmetry_combined(tds1_masked, tds1_mask, 20)
+score2 = asymmetry_combined(tds2_masked, tds2_mask, 20)
+
+#for i in range(0, len(tds2_mask)):
+#    dataH, dataV, asymmetry = a.run(images[i], tds0_masked#[i], tds0_mask[i], compactness=20)
+#    data.append(asymmetry)
+#
+#    print(asymmetry)
+#
+#    dataX.append(dataH)
+#    dataY.append(dataV)
+
+#Get minimum, maximum, lower quartile, upper quartile, and median
+
+#Create box plot
+plot = plt.boxplot([score0, score2], columns=['symmetrical', 'Asymmetrical'])
+
+plot.set_title('Range of Symmetrical and Asymmetrical')
+plot.set_ylabel('Euclidean Distance (LAB)')
+plot.set_xlabel('Symmetry')
+plt.show()
+
+    #vertical_book = xlwt.Workbook()
+    #horiztonal_book = xlwt.Workbook()
+    #ground_book = xlwt.Workbook()
+
+    #save_output2d(dataX, 'Horizontal{j}', horiztonal_book)
+    #save_output2d(dataY, 'Vertical{j}', vertical_book)
+    #save_output1d(data, 'Results{j}', ground_book)
+
+    #vertical_book.save('vertical_output.xls')
+    #horiztonal_book.save('Horiztonal_output.xls')
+    #ground_book.save('ground_output.xls')

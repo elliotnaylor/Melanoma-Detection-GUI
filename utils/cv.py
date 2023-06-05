@@ -30,3 +30,9 @@ def bgr2gray_cv(image):
 
     return gray
 
+def crop_mask(mask):
+    gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+    coordinates = cv2.findNonZero(gray)
+    x, y, w, h = cv2.boundingRect(coordinates)
+
+    return x, y, w, h

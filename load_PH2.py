@@ -53,7 +53,7 @@ class PH2:
         return images
 
     def load_single_image(self, number):
-        index = self.sheet.cell_value(13 + number, 0)
+        index = self.sheet.cell_value(number, 0)
         print(str(index))
         path = self.image_path(index)
         img = load_img_cv(path)
@@ -64,13 +64,13 @@ class PH2:
         images = []
 
         #13 being starting point of names in the ph2 spreadsheet
-        for i in range(0, self.sheet.nrows - 13):
+        for i in range(13, self.sheet.nrows):
             images.append(self.load_single_image(i))
 
         return images
     
     def load_single_mask(self, number):
-        index = self.sheet.cell_value(13 + number, 0)
+        index = self.sheet.cell_value(number, 0)
 
         path = self.mask_path(index)
         mask = load_img_cv(path)
@@ -81,7 +81,7 @@ class PH2:
         masks = []
 
         #13 being starting point of names in the ph2 spreadsheet
-        for i in range(13, self.sheet.nrows - 13):
+        for i in range(13, self.sheet.nrows):
 
             masks.append(self.load_single_mask(i))
 
@@ -105,7 +105,8 @@ class PH2:
 
         #List of clinical diagnoses
         for j in range(13, self.sheet.nrows):
-            asymmetry.append(self.sheet.cell_value(j, 5)) #Gets name of diagnoses (Common Nevus, Atypical Nevus, Melanoma)
+            asymmetry.append(self.sheet.cell_value(j, 5)) 
+            #Gets Asymmetry
         
         return asymmetry
 

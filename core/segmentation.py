@@ -41,3 +41,6 @@ class Segmentation:
         ret,mask = cv2.threshold(bhg,10,255,cv2.THRESH_BINARY)
         #Replace pixels of the mask
         dst = cv2.inpaint(img,mask,6,cv2.INPAINT_TELEA)
+
+    def segNet():
+        

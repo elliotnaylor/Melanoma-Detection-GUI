@@ -12,7 +12,6 @@ from utils.math import *
 from utils.numpy import *
 from utils.plot import *
 
-import mahotas
 import PIL
 
 class Asymmetry:

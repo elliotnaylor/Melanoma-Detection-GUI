@@ -9,7 +9,7 @@ from scipy.spatial import ConvexHull
 from utils.cv import *
 from utils.draw import *
 from utils.math import *
-from utils.numpy import *
+from utils.numpy_util import *
 from utils.plot import *
 
 import PIL

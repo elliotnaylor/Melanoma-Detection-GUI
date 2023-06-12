@@ -1,8 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
+from PIL import ImageTk, Image 
 
-class interface(tk.Tk):
-    
+
+class MainApplication(tk.Tk) :
+
+    image_main = []
+
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         # Adding a title to the window
@@ -44,9 +49,6 @@ class interface(tk.Tk):
 
         dermo_name_label = tk.Label(abcd_info_frame, text="Dermoscopic")
         dermo_name_label.grid(row=3, column=0, padx=10, pady=10)
-
-        
-
         dermo_name_entry = tk.Entry(abcd_info_frame)
         dermo_name_entry.grid(row=3, column=1, padx=10, pady=10)
 
@@ -103,29 +105,52 @@ class interface(tk.Tk):
         buttons_frame.grid(row=0, column=1, padx=20, pady=20)
 
         #Loads dataset, will be removed in future update
-        init_button = tk.Button(buttons_frame, text="Initalise", command= self.run)
+        init_button = tk.Button(buttons_frame, text="Initalise", command=lambda : self.run())
         init_button.grid(row=0, column=0, sticky="news", padx=20, pady=10)
 
-        load_button = tk.Button(buttons_frame, text="load Image", command= self.run)
+        load_button = tk.Button(buttons_frame, text="load Image", command=lambda : self.load_image())
         load_button.grid(row=0, column=1, sticky="news", padx=20, pady=10)
 
         lesion_info_frame = tk.LabelFrame(container, text="Patient information")
         lesion_info_frame.grid(row=1, column=1, padx=20, pady=20)
-        lesion_name_label = tk.Label(lesion_info_frame, width=40, height=20, text="No image loaded")
+        lesion_name_label = tk.Label(lesion_info_frame, width=40, height=20, text="No data loaded")
+        lesion_name_label.grid(row=1, column=0, padx=20, pady=10)
+
+        image = Image.open('C:/Users/el295904/Dataset/ISIC_2018/Original/Training_Dermoscopic/ISIC_0000000_attribute_globules.png')
+
+        image.thumbnail((360, 360))
+
+        self.image_main = ImageTk.PhotoImage(image)
+
+        lesion_name_label = tk.Label(lesion_info_frame, width=self.image_main.width(), height=self.image_main.height(), text="No image loaded", image=self.image_main)
         lesion_name_label.grid(row=1, column=0, padx=20, pady=10)
 
         bayesian_info_frame = tk.LabelFrame(container, text="Bayesian")
         bayesian_info_frame.grid(row=1, column=2, padx=20, pady=20)
         bayesian_name_label = tk.Label(bayesian_info_frame, width=40, height=20, text="No data loaded")
         bayesian_name_label.grid(row=1, column=0, padx=20, pady=10)
+    
+    def run(self):
+        print("Run pressed")
+
+    def load_image(self):
+        print("Load_Image pressed")
+
+        filename = filedialog.askopenfilename(initialdir = "/",
+                                          title = "Select a File",
+                                          filetypes = (("Image file",
+                                                        "*.png*"),
+                                                       ("all files",
+                                                "*.*")))
+        image = Image.open(filename)
+
+        image.thumbnail((360, 360))
+
+        self.image_main = ImageTk.PhotoImage(image)
 
 
-
-
-    def run():
-        pass
 
 
 if __name__ == "__main__":
-    testObj = interface()
+    testObj = MainApplication()
     testObj.mainloop()

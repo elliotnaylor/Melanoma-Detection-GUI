@@ -3,38 +3,40 @@ import numpy as np
 import pandas as pd
 import matplotlib as plot
 
-#1. Importing data
-path = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete3.csv'
+class bayesianFusion:
 
-csv = np.genfromtxt (path, delimiter=",", )
+    #1. Importing data
+    path = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete3.csv'
 
-sampleData = ['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
+    csv = np.genfromtxt (path, delimiter=",", )
 
-df = pd.DataFrame(csv, columns = ['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks'])
+    sampleData = ['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
 
-#2. Making directed acycle graph (DAG)
-edges = [('Globules','Diagnosis'), ('Milia','Diagnosis'), ('Negative','Diagnosis'), ('Pigment','Diagnosis'), ('Streaks','Diagnosis')]
+    df = pd.DataFrame(csv, columns = ['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks'])
 
-DAG = bn.make_DAG(edges, methodtype='bayes')
+    #2. Making directed acycle graph (DAG)
+    edges = [('Globules','Diagnosis'), ('Milia','Diagnosis'), ('Negative','Diagnosis'), ('Pigment','Diagnosis'), ('Streaks','Diagnosis')]
 
-fig = bn.plot(DAG)
+    DAG = bn.make_DAG(edges, methodtype='bayes')
 
-#3. Train model
-DAG_update = bn.parameter_learning.fit(DAG, df)
+    fig = bn.plot(DAG)
 
-#Generate samples and re-train based on those samples
-df_sampling = bn.sampling(DAG, n=10000)
-DAG_update = bn.parameter_learning.fit(DAG, df_sampling)
+    #3. Train model
+    DAG_update = bn.parameter_learning.fit(DAG, df)
 
-#4. Predict
-query = bn.inference.fit(DAG_update,  variables=['Diagnosis'], evidence={'Globules':0, 'Milia':0, 'Negative':0, 'Pigment':0, 'Streaks':1})
+    #Generate samples and re-train based on those samples
+    df_sampling = bn.sampling(DAG, n=10000)
+    DAG_update = bn.parameter_learning.fit(DAG, df_sampling)
 
-print(query)
-print(bn.query2df(query))
+    #4. Predict
+    query = bn.inference.fit(DAG_update,  variables=['Diagnosis'], evidence={'Globules':0, 'Milia':0, 'Negative':0, 'Pigment':0, 'Streaks':1})
 
-Pout = bn.predict(DAG_update, df, variables=['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks'])
+    print(query)
+    print(bn.query2df(query))
 
-print(Pout)
+    Pout = bn.predict(DAG_update, df, variables=['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks'])
+
+    print(Pout)
 
 
 """

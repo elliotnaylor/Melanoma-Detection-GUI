@@ -3,6 +3,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from sklearn.inspection import DecisionBoundaryDisplay
+import numpy as np
 
 def draw_image(image):
     plt.imshow(image)
@@ -40,3 +41,9 @@ def draw_svm_boundries(pipeline, xdata, ydata):
     ax.set_xlabel('Size of Skin Lesion (100 / sample_size * i)')
     ax.set_ylabel('Colour difference (3D euclidean distance)')
     plt.show()
+
+def fig2rgb_array(fig):
+    fig.canvas.draw()
+    buf = fig.canvas.tostring_rgb()
+    ncols, nrows = fig.canvas.get_width_height()
+    return np.fromstring(buf, dtype=np.uint8).reshape(nrows, ncols, 3)

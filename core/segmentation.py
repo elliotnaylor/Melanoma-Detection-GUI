@@ -57,7 +57,7 @@ class Segmentation:
     #Load the pre-trained model, predict and return the results
     def segNet(img):
 
-        img = [img]
+        img = [img] #Prediction requires an array of images
 
         #Load a pre=trained model of SegNet
         model = Segnet.getModelSegnet((192, 256, 3))
@@ -71,3 +71,6 @@ class Segmentation:
         
         return prediction[0]
 
+    #Add a joint technique of SegNet and LBPC/Otsu
+    def combinedSegment():
+        pass

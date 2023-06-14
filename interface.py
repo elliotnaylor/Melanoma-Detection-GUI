@@ -10,19 +10,22 @@ from utils.plot import *
 
 import csv
 
+import ABCD as abcd
+
 import matplotlib.pyplot as plt
 from io import BytesIO
 
 def csv_to_array(path):
     return np.genfromtxt (path, delimiter=",", dtype=str)
 
-class MainApplication(tk.Tk) :
+class MainApplication(tk.Tk, abcd) :
 
     image_main = []
     image_graph = []
 
     path = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete5.csv'
     path_data = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete.csv'
+    
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         # Adding a title to the window
@@ -159,6 +162,7 @@ class MainApplication(tk.Tk) :
         if dermo > 4:
             dermo = 4
 
+        
         weights = self.Bf.predict(
             globules, 
             milia, 
@@ -211,7 +215,6 @@ class MainApplication(tk.Tk) :
         self.lesion_name_label.configure(image=self.image_main)
 
         #Load variables from image
-
         filename = os.path.basename(filepath)
 
         filename = filename.split('.', 1)[0]
@@ -232,12 +235,6 @@ class MainApplication(tk.Tk) :
                 self.dermo_name_entry.insert(0, array[i][9])
                 self.dermo_name_entry.configure(state="disabled")
                 self.run()
-            
-
-
-
-
-
 
 if __name__ == "__main__":
     testObj = MainApplication()

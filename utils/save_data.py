@@ -3,6 +3,28 @@ import csv
 import os
 import cv2
 
+from PIL import Image, ImageTk
+
+import numpy as np
+import cv2
+from core.asymmetry import Asymmetry
+from utils.cv import *
+from utils.plot import draw_svm_boundries
+from utils.xlrd import *
+
+from load_PH2 import PH2
+
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+from sklearn.inspection import DecisionBoundaryDisplay
+import pickle
+
+import matplotlib.pyplot as plt
+
+import os
+
 def count_white_pixels(image):
     return np.sum(image == 255) / 255
 
@@ -38,8 +60,12 @@ for i in range(1, len(array)):
         percentage = dermo_num / seg_num
 
         if dermo is not None:
-            array[i][j+4] = round(percentage, 5)
+            array[i][j+3] = round(percentage, 2)
         else:
-            array[i][j+4] = '-'
+            array[i][j+3] = '-'
+
+
+
+
 
 array_to_csv(array, path_save)

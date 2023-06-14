@@ -1,6 +1,18 @@
+from segnet import *
 
+from keras.preprocessing import image
+from keras.models import Model, Sequential
+from keras.layers import Activation, Dense, GlobalAveragePooling2D, BatchNormalization, Dropout, Conv2D, Conv2DTranspose, AveragePooling2D, MaxPooling2D, UpSampling2D, Input, Reshape
+from keras import backend as K
+from keras.optimizers import Nadam, Adam, SGD
+
+from keras.metrics import categorical_accuracy, binary_accuracy
+#from keras_contrib.losses import jaccard
+
+import tensorflow as tf
 
 class Segmentation:
+
     def __init__(self):
         pass
 
@@ -42,5 +54,20 @@ class Segmentation:
         #Replace pixels of the mask
         dst = cv2.inpaint(img,mask,6,cv2.INPAINT_TELEA)
 
-    def segNet():
+    #Load the pre-trained model, predict and return the results
+    def segNet(img):
+
+        img = [img]
+
+        #Load a pre=trained model of SegNet
+        model = Segnet.getModelSegnet((192, 256, 3))
+
+        model.compile(optimizer= Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy')
+
+        model.load_weights('../models/skin_lesion.h5')
         
+        prediction = model.predict(img, batch_size=16)
+        
+        return prediction[0]
+

@@ -91,7 +91,7 @@ score2 = asymmetry_combined(tds2_masked, tds2_mask, 20)
 #Get minimum, maximum, lower quartile, upper quartile, and median
 
 #Create box plot
-plot = plt.boxplot([score0, score2], columns=['symmetrical', 'Asymmetrical'])
+plot = plt.boxplot([score0, score2])
 
 plot.set_title('Range of Symmetrical and Asymmetrical')
 plot.set_ylabel('Euclidean Distance (LAB)')

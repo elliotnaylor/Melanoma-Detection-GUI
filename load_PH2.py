@@ -22,8 +22,8 @@ class PH2:
         xlrd.xlsx.Element_has_iter = True
 
         #Load Excel file
-        path_xl = os.path.join(os.getcwd() + '/../../Dataset/PH2Dataset/PH2_dataset.xlsx')
-        path_images = os.path.join(os.getcwd() + '/../../Dataset/PH2Dataset/PH2 Dataset images')
+        path_xl = 'D:/Datasets/PH2Dataset/PH2_dataset.xlsx'
+        path_images = 'D:/Datasets/PH2Dataset/PH2 Dataset images'
         
         self.workbook = xlrd.open_workbook(path_xl)
         self.sheet = self.workbook.sheet_by_index(0)

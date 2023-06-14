@@ -156,6 +156,9 @@ class MainApplication(tk.Tk) :
         streaked = int(self.streaked_combo.get())
         dermo = globules + milia + negative + network + streaked
 
+        if dermo > 4:
+            dermo = 4
+
         weights = self.Bf.predict(
             globules, 
             milia, 

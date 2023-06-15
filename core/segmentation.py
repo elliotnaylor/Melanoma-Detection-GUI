@@ -10,16 +10,43 @@ from keras.metrics import categorical_accuracy, binary_accuracy
 #from keras_contrib.losses import jaccard
 
 import tensorflow as tf
+import cv2
+import numpy as np
+from skimage import feature
+from sklearn.cluster import KMeans
+
+class LocalBinaryPatterns:
+	def __init__(self, numPoints, radius):
+		# store the number of points and radius
+		self.numPoints = numPoints
+		self.radius = radius
+                
+	def describe(self, image, eps=1e-7):
+		# compute the Local Binary Pattern representation
+		# of the image, and then use the LBP representation
+		# to build the histogram of patterns
+		lbp = feature.local_binary_pattern(image, self.numPoints,
+			self.radius, method="uniform")
+		(hist, _) = np.histogram(lbp.ravel(),
+			bins=np.arange(0, self.numPoints + 3),
+			range=(0, self.numPoints + 2))
+		
+        # normalize the histogram
+		hist = hist.astype("float")
+		hist /= (hist.sum() + eps)
+		# return the histogram of Local Binary Patterns
+		return hist
 
 class Segmentation:
 
     def __init__(self):
-        pass
+        self.lbp = LocalBinaryPatterns(24, 8)
 
+    
     def LBPC_Segmentation(self, _gray):
     
         #lbp filter
-        lbp_image = describe(_gray)
+        lbp_image = self.lbp.describe(_gray)
         
         #2. Gaussian Blur
         blur = cv2.GaussianBlur(lbp_image, (21,21), 0, 3)
@@ -40,7 +67,8 @@ class Segmentation:
         
         return final
 
-    def dullRazor():
+    #Algorithm for removing hair from skin lesions
+    def dullRazor(img):
 
         #Gray scale
         grayScale = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY )

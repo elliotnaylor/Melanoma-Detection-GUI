@@ -7,13 +7,11 @@ class bayesianFusion:
 
     def __init__(self, path):
         #1. Importing data
-        path = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete5.csv'
-
-        csv = np.genfromtxt (path, delimiter=",", )
+        csv = np.genfromtxt (path, delimiter=",")
 
         sampleData = ['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
 
-        self.df = pd.DataFrame(csv, columns = ['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks', 'Structures'])
+        self.df = pd.DataFrame(csv, columns = sampleData)
 
         #2. Making directed acycle graph (DAG)
         #edges = [('Globules','Diagnosis'), ('Milia','Diagnosis'), ('Negative','Diagnosis'), ('Pigment','Diagnosis'), ('Streaks','Diagnosis'), ('Structures', 'Diagnosis')]

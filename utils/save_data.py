@@ -43,29 +43,27 @@ def array_to_csv(array, path):
         writer = csv.writer(f)
         writer.writerows(array)
 
-array = csv_to_array(path)
-
-for i in range(1, len(array)):
-    seg_path = path_folder + 'Training_Segmentation/' + array[i][0] + '_segmentation.png'
-    seg = cv2.imread(seg_path)
-
-    seg_num = count_white_pixels(seg)
-
-    for j in range(0, len(dermo_list)):
-
-        dermo = cv2.imread(path_folder + 'Training_Dermoscopic/' + array[i][0] + '_attribute_' + dermo_list[j] + '.png')
-
-        dermo_num = count_white_pixels(dermo)
-
-        percentage = dermo_num / seg_num
-
-        if dermo is not None:
-            array[i][j+3] = round(percentage, 2)
-        else:
-            array[i][j+3] = '-'
 
 
+def findDermoscopic():
+    array = csv_to_array(path)
+    for i in range(1, len(array)):
+        seg_path = path_folder + 'Training_Segmentation/' + array[i][0] + '_segmentation.png'
+        seg = cv2.imread(seg_path)
 
+        seg_num = count_white_pixels(seg)
 
+        for j in range(0, len(dermo_list)):
 
-array_to_csv(array, path_save)
+            dermo = cv2.imread(path_folder + 'Training_Dermoscopic/' + array[i][0] + '_attribute_' + dermo_list[j] + '.png')
+
+            dermo_num = count_white_pixels(dermo)
+
+            percentage = dermo_num / seg_num
+
+            if dermo is not None:
+                array[i][j+3] = round(percentage, 2)
+            else:
+                array[i][j+3] = '-'
+
+    array_to_csv(array, path_save)

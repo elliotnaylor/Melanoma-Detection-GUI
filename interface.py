@@ -10,7 +10,7 @@ from utils.plot import *
 
 import csv
 
-import ABCD as abcd
+from ABCD import ABCD_Rules
 
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -18,7 +18,8 @@ from io import BytesIO
 def csv_to_array(path):
     return np.genfromtxt (path, delimiter=",", dtype=str)
 
-class MainApplication(tk.Tk, abcd) :
+class MainApplication(tk.Tk, ABCD_Rules) :
+
 
     image_main = []
     image_graph = []
@@ -31,9 +32,7 @@ class MainApplication(tk.Tk, abcd) :
         # Adding a title to the window
         self.wm_title("Test Application")
 
-
         self.Bf = bayesianFusion(self.path)
-
 
         # creating a frame and assigning it to container
         container = tk.Frame(self, height=400, width=600)
@@ -158,10 +157,10 @@ class MainApplication(tk.Tk, abcd) :
         network = int(self.network_combo.get())
         streaked = int(self.streaked_combo.get())
         dermo = globules + milia + negative + network + streaked
-
+        
         if dermo > 4:
             dermo = 4
-
+        
         
         weights = self.Bf.predict(
             globules, 
@@ -191,9 +190,6 @@ class MainApplication(tk.Tk, abcd) :
         self.bayesian_name_label.configure(image = self.image_graph)
 
         plt.clf()
-
-
-
 
     def load_image(self):
 
@@ -235,6 +231,7 @@ class MainApplication(tk.Tk, abcd) :
                 self.dermo_name_entry.insert(0, array[i][9])
                 self.dermo_name_entry.configure(state="disabled")
                 self.run()
+
 
 if __name__ == "__main__":
     testObj = MainApplication()

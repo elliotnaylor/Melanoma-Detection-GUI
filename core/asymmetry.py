@@ -83,9 +83,18 @@ class Asymmetry:
 
     def moments(self, _image):
         moments = cv2.moments(_image)
-        center = (int(moments["m10"] / moments["m00"]), int(moments["m01"] / moments["m00"])) #Gets center
-        phi = 0.5*math.atan(2*moments["m11"]/(moments["m20"]-moments["m02"])) #Gets rotation
 
+        #Gets center
+        try:
+            center = (int(moments["m10"] / moments["m00"]), int(moments["m01"] / moments["m00"])) 
+        
+            #Gets rotation
+            phi = 0.5*math.atan(2*moments["m11"]/(moments["m20"]-moments["m02"]))
+            
+        except ZeroDivisionError:
+            center = (0, 0)
+            phi = 0
+        
         return center, phi
 
     def difference(self, difference, thresh):
@@ -216,7 +225,7 @@ class Asymmetry:
         #Recalculate center of mass from the newly rotated image (rotate_bound function resizes image, making it difficult to translate position)
         center, phi = self.moments(mask_rotation)
         
-        h_shape, v_shape = self.shapeSymmetry(mask_rotation, center)
+        #h_shape, v_shape = self.shapeSymmetry(mask_rotation, center)
 
         lab = bgr2lab_cv(colour_rotation)
 

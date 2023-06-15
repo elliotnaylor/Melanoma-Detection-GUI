@@ -9,7 +9,7 @@ class bayesianFusion:
         #1. Importing data
         csv = np.genfromtxt (path, delimiter=",")
 
-        sampleData = ['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
+        sampleData = ['Diagnosis', 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
 
         self.df = pd.DataFrame(csv, columns = sampleData)
 
@@ -17,12 +17,12 @@ class bayesianFusion:
         #edges = [('Globules','Diagnosis'), ('Milia','Diagnosis'), ('Negative','Diagnosis'), ('Pigment','Diagnosis'), ('Streaks','Diagnosis'), ('Structures', 'Diagnosis')]
 
         edges = [
+            ('Asymmetry', 'Diagnosis'),
             ('Globules','Diagnosis'), 
             ('Milia','Diagnosis'), 
             ('Negative','Diagnosis'), 
             ('Pigment','Diagnosis'), 
-            ('Streaks','Diagnosis'), 
-            ('Structures', 'Diagnosis')]
+            ('Streaks','Diagnosis')]
 
         DAG = bn.make_DAG(edges, methodtype='bayes')
 
@@ -39,10 +39,10 @@ class bayesianFusion:
 
         #print(Pout)
 
-    def predict(self, _g, _m, _n, _p, _s, _f):
+    def predict(self, _a, _g, _m, _n, _p, _s):
 
         #4. Predict
-        query = bn.inference.fit(self.DAG_update,  variables=['Diagnosis'], evidence={'Globules':_g, 'Milia':_m, 'Negative':_n, 'Pigment':_p, 'Streaks':_s})
+        query = bn.inference.fit(self.DAG_update,  variables=['Diagnosis'], evidence={ 'Asymmetry': _a, 'Globules':_g, 'Milia':_m, 'Negative':_n, 'Pigment':_p, 'Streaks':_s})
 
         #print(query)
         #print(bn.query2df(query))

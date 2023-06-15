@@ -22,6 +22,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
 
     image_main = []
+    tk_image = []
     image_graph = []
 
     path = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete5.csv'
@@ -29,10 +30,13 @@ class MainApplication(tk.Tk, ABCD_Rules) :
     
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+
+        self.train_network()
+
         # Adding a title to the window
         self.wm_title("Test Application")
 
-        self.Bf = bayesianFusion(self.path)
+        #self.Bf = bayesianFusion(self.path)
 
         # creating a frame and assigning it to container
         container = tk.Frame(self, height=400, width=600)
@@ -54,8 +58,8 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
         asymmetry_name_label = tk.Label(abcd_info_frame, text="Asymmetry")
         asymmetry_name_label.grid(row=0, column=0, padx=10, pady=10)
-        asymmetry_name_entry = tk.Entry(abcd_info_frame)
-        asymmetry_name_entry.grid(row=0, column=1, padx=10, pady=10)
+        self.asymmetry_name_entry = tk.Entry(abcd_info_frame)
+        self.asymmetry_name_entry.grid(row=0, column=1, padx=10, pady=10)
 
         border_name_label = tk.Label(abcd_info_frame, text="Border")
         border_name_label.grid(row=1, column=0, padx=10, pady=10)
@@ -122,8 +126,8 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         location_name_entry.grid(row=2, column=1, padx=10, pady=10)
 
 
-        buttons_frame =tk.LabelFrame(container, text="buttons")
-        buttons_frame.grid(row=0, column=1, padx=20, pady=20)
+        buttons_frame =tk.LabelFrame(info_frame, text="buttons")
+        buttons_frame.grid(row=3, column=0, padx=20, pady=20)
 
         #Loads dataset, will be removed in future update
         init_button = tk.Button(buttons_frame, text="Initalise", command=lambda : self.run())
@@ -151,6 +155,39 @@ class MainApplication(tk.Tk, ABCD_Rules) :
     def run(self):
         print("Run pressed")
 
+        variables = [
+            int(self.asymmetry_name_entry.get()),
+            int(self.globules_combo.get()),
+            int(self.milia_combo.get()),
+            int(self.negative_network_combo.get()),
+            int(self.network_combo.get()),
+            int(self.streaked_combo.get()) 
+            ]
+
+        weights = self.predictImage(variables)
+        
+        data = {'Benign Naevi':weights[0], 'Seborriec':weights[1], 'Melanoma':weights[2]}        
+
+        courses = list(data.keys())
+        values = list(data.values())
+
+        #fig = plt.figure(figsize = (10, 10))
+
+        plt.bar(courses, values)
+
+        buffer = BytesIO()
+        plt.savefig(buffer,format='png')
+        image = Image.open(buffer)
+
+        image.thumbnail((360, 360))
+        
+        self.image_graph = ImageTk.PhotoImage(image)
+
+        self.bayesian_name_label.configure(image = self.image_graph)
+
+        plt.clf()
+
+        '''
         globules = int(self.globules_combo.get())
         milia = int(self.milia_combo.get())
         negative = int(self.negative_network_combo.get())
@@ -190,6 +227,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         self.bayesian_name_label.configure(image = self.image_graph)
 
         plt.clf()
+        '''
 
     def load_image(self):
 
@@ -207,16 +245,30 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         image.thumbnail((360, 360))
 
         #Update tje lesion label with the image
-        self.image_main = ImageTk.PhotoImage(image)
-        self.lesion_name_label.configure(image=self.image_main)
+        self.tk_image = ImageTk.PhotoImage(image)
 
-        #Load variables from image
-        filename = os.path.basename(filepath)
+        self.lesion_name_label.configure(image=self.tk_image)
 
-        filename = filename.split('.', 1)[0]
+        #Currently returns asy, glob, 
+        variables = self.analyseImage(filepath)
 
-        array = csv_to_array(self.path_data)
+        self.asymmetry_name_entry.delete(0, tk.END)
+        self.asymmetry_name_entry.insert(0, variables[0])
 
+        self.globules_combo.current(variables[1])
+        self.milia_combo.current(variables[2])
+        self.negative_network_combo.current(variables[3])
+        self.network_combo.current(variables[4])
+        self.streaked_combo.current(variables[5])
+               
+        self.run()
+        
+        #self.dermo_name_entry.configure(state="normal")
+        #self.dermo_name_entry.delete(0, tk.END)
+        #self.dermo_name_entry.insert(0, array[i][9])
+        #self.dermo_name_entry.configure(state="disabled")
+
+        '''
         for i in range(0, len(array)):
             if filename == array[i][0]:
 
@@ -231,7 +283,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
                 self.dermo_name_entry.insert(0, array[i][9])
                 self.dermo_name_entry.configure(state="disabled")
                 self.run()
-
+        '''
 
 if __name__ == "__main__":
     testObj = MainApplication()

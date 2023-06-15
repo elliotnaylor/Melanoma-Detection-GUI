@@ -1,4 +1,4 @@
-from segnet import *
+
 
 from keras.preprocessing import image
 from keras.models import Model, Sequential
@@ -14,6 +14,8 @@ import cv2
 import numpy as np
 from skimage import feature
 from sklearn.cluster import KMeans
+
+from core.segnet2 import *
 
 class LocalBinaryPatterns:
 	def __init__(self, numPoints, radius):
@@ -83,9 +85,9 @@ class Segmentation:
         dst = cv2.inpaint(img,mask,6,cv2.INPAINT_TELEA)
 
     #Load the pre-trained model, predict and return the results
-    def segNet(img):
+    def segNet_array(img):
 
-        img = [img] #Prediction requires an array of images
+        img = img[np.newaxis, ...] #Prediction requires an array of images
 
         #Load a pre=trained model of SegNet
         model = Segnet.getModelSegnet((192, 256, 3))
@@ -93,11 +95,27 @@ class Segmentation:
         model.compile(optimizer= Adam(learning_rate=0.001), 
               loss = 'binary_crossentropy')
 
-        model.load_weights('../models/skin_lesion.h5')
+        model.load_weights('C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/models/skin_lesion.h5')
         
         prediction = model.predict(img, batch_size=16)
         
         return prediction[0]
+    
+    def segNet(img):
+
+        #img = img[np.newaxis, ...] #Prediction requires an array of images
+
+        #Load a pre=trained model of SegNet
+        model = Segnet.getModelSegnet((192, 256, 3))
+
+        model.compile(optimizer= Adam(learning_rate=0.001), 
+              loss = 'binary_crossentropy')
+
+        model.load_weights('C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/models/skin_lesion.h5')
+        
+        prediction = model.predict(img, batch_size=16)
+        
+        return prediction
 
     #Add a joint technique of SegNet and LBPC/Otsu
     def combinedSegment():

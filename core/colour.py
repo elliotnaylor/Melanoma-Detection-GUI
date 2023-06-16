@@ -10,8 +10,6 @@ from utils.math import *
 
 from scipy.spatial import ConvexHull
 
-import mahotas as mh
-
 class Colour:
 
     #Starting colour ranges for white, black, light brown, dark brown, red and blue gray in LAB

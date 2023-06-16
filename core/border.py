@@ -9,7 +9,6 @@ from matplotlib.lines import Line2D
 
 from scipy.spatial import ConvexHull
 
-import mahotas as mh
 
 class Border:
 

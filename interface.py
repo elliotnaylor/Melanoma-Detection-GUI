@@ -20,7 +20,6 @@ def csv_to_array(path):
 
 class MainApplication(tk.Tk, ABCD_Rules) :
 
-
     image_main = []
     tk_image = []
     image_graph = []
@@ -131,7 +130,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         buttons_frame.grid(row=3, column=0, padx=20, pady=20)
 
         #Loads dataset, will be removed in future update
-        init_button = tk.Button(buttons_frame, text="Initalise", command=lambda : self.run())
+        init_button = tk.Button(buttons_frame, text="Run", command=lambda : self.run())
         init_button.grid(row=0, column=0, sticky="news", padx=20, pady=10)
 
         load_button = tk.Button(buttons_frame, text="load Image", command=lambda : self.load_image())
@@ -144,6 +143,9 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
         self.lesion_name_label = tk.Label(lesion_info_frame, text="No image loaded")
         self.lesion_name_label.grid(row=1, column=0, padx=20, pady=10)
+
+        more_info_button = tk.Button(lesion_info_frame, text="More info", command=lambda : self.show_segmentation())
+        more_info_button.grid(row = 2, column = 0, padx=20, pady=10)
 
         bayesian_info_frame = tk.LabelFrame(container, text="Bayesian")
         bayesian_info_frame.grid(row=1, column=2, padx=20, pady=20)
@@ -285,6 +287,9 @@ class MainApplication(tk.Tk, ABCD_Rules) :
                 self.dermo_name_entry.configure(state="disabled")
                 self.run()
         '''
+
+    def show_segmentation(self):
+        print('Lesion more Info button pressed')
 
 if __name__ == "__main__":
     testObj = MainApplication()

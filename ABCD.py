@@ -54,11 +54,14 @@ def white_pixels(img):
 
 class ABCD_Rules:
 
-    folder_path = 'D:/Datasets/ISIC_2018/Resized/Training/'
-    csv_path = 'C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/data/ISIC_2017_GroundTruth.csv'
-    save_path = 'C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/data/ISIC_2017_generated.csv'
     
-    model_path = 'C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/models/'
+    #folder_path = 'D:\\Datasets\\ISIC_2018\\Resized\\Training\\'
+    folder_path = 'C:\\Users\\el295904\\Dataset\\ISIC_2018\\Resized\\'
+    
+    csv_path = os.path.join(os.getcwd(), 'data\\ISIC_2017_GroundTruth.csv')
+    save_path = os.path.join(os.getcwd(), 'data\\ISIC_2017_generated.csv')
+    
+    model_path = os.path.join(os.getcwd(), 'models\\')
 
     asymmetry = Asymmetry()
     #border = Border()
@@ -139,7 +142,7 @@ class ABCD_Rules:
                 '''
                 for j in range(0, len(dermo_list)):
 
-                    dermo = cv2.imread(self.folder_path + 'Training_Dermoscopic/' + array[i][0] + '_attribute_' + dermo_list[j] + '.png')
+                    dermo = cv2.imread(self.folder_path + 'Training_Dermoscopic\\' + array[i][0] + '_attribute_' + dermo_list[j] + '.png')
                     
                     if dermo is not None:
 

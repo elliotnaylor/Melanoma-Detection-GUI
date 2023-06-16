@@ -45,13 +45,21 @@ def array_to_csv(array, path):
         writer = csv.writer(f)
         writer.writerows(array)
 
+def white_pixels(img):
+    pixel_count = count_white_pixels(img)
+    if pixel_count > 0:
+        return 1
+    else:
+        return 0
 
 class ABCD_Rules:
 
     folder_path = 'D:/Datasets/ISIC_2018/Resized/Training/'
-    csv_path = 'C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/data/ISIC_2017_GroundTruth_Complete.csv'
-    save_path = 'D:/Datasets/ISIC_2018/ISIC_2017_generated.csv'
+    csv_path = 'C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/data/ISIC_2017_GroundTruth.csv'
+    save_path = 'C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/data/ISIC_2017_generated.csv'
     
+    model_path = 'C:/Users/scary/Documents/GitHub/Melanoma-detection-GUI/models/'
+
     asymmetry = Asymmetry()
     #border = Border()
     #colour = Colour()
@@ -67,11 +75,11 @@ class ABCD_Rules:
         #Train bayesian network based on the provided metadata
         self.Bf = bayesianFusion(self.save_path)
 
-    def getSegmentation(self, images):
+    def getSegmentation(self, images, filename):
         mask_array = []
         masked_array = []
 
-        masks = Segmentation.segNet(images)
+        masks = Segmentation.segNet(images, self.model_path + filename)
         
         #Convert float32 to uint8 and convert single pixel value to tuple
         masks = masks*255
@@ -92,30 +100,38 @@ class ABCD_Rules:
     #User can then modfiy values before predictImage() is called
     def analyseImage(self, file_path):
 
-        variables = []
+        variables = [] #Order of asymmetry, globules, milia, negative, network, and streaks
+        
+        file_name = os.path.splitext(os.path.basename(file_path))[0]
 
-        dermo_list = ['globules','milia_like_cyst','negative_network','pigment_network','streaks']
+        img = cv2.imread(file_path)
+
+        img = img[np.newaxis, ...] #Prediction requires an array of image
+
+        #Segment
+        masks, masked = self.getSegmentation(img, 'skin_lesion.h5')
+        
+        #Asymmetry
+        dataH, dataV, asymmetry = self.asymmetry.run(img[0], masked[0], masks[0])
+
+        variables.append(asymmetry)
+
+        #Border
+
+        #Colour
+
+        
+        
+        
+
+        #Dermoscopic structure
+        dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
 
         array = csv_to_array(self.csv_path)
-
-        file_name = os.path.splitext(os.path.basename(file_path))[0]
 
         for i in range(1, len(array)):
 
             if(array[i][0] == file_name):
-                
-                img = cv2.imread(file_path)
-
-                img = img[np.newaxis, ...] #Prediction requires an array of images
-
-                #Segment
-                masks, masked = self.getSegmentation(img)
-
-                #Asymmetry
-                dataH, dataV, asymmetry = self.asymmetry.run(img[0], masked[0], masks[0])
-
-                variables.append(asymmetry)
-
                 '''
                 Get dermoscopic structures, currently on whether there is an
                 image available in the ISIC 2017 dataset.
@@ -124,16 +140,18 @@ class ABCD_Rules:
                 for j in range(0, len(dermo_list)):
 
                     dermo = cv2.imread(self.folder_path + 'Training_Dermoscopic/' + array[i][0] + '_attribute_' + dermo_list[j] + '.png')
-
-                    dermo_num = count_white_pixels(dermo)
-
+                    
                     if dermo is not None:
-                        if dermo_num > 0: #If there is is a mask of the dermoscopic feature
-                            variables.append(1)
-                        else:
-                            variables.append(0)
+
+                        variables.append(white_pixels(dermo))
+
                     else:
                         print("Error: No image data found on " + file_name)
+
+        #Pigment Network
+        p_masks, p_masked = self.getSegmentation(img, 'network.h5')            
+
+        variables[4] = white_pixels(p_masks[0])
 
         return variables
 
@@ -165,6 +183,8 @@ class ABCD_Rules:
 
             array[i+1][2] = asymmetry
             print("Finished image: " + i + " out of " + len(masks))
+
+
 
         '''
         CSV is already populated with dermoscopic structures

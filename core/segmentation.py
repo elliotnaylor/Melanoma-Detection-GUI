@@ -101,8 +101,8 @@ class Segmentation:
         
         return prediction[0]
     
-    def segNet(img):
-
+    def segNet(img, model_path):
+        
         #img = img[np.newaxis, ...] #Prediction requires an array of images
 
         #Load a pre=trained model of SegNet

@@ -24,6 +24,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
     image_main = []
     tk_image = []
     image_graph = []
+    seg_img = []
 
     path = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete5.csv'
     path_data = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete.csv'
@@ -34,7 +35,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         self.train_network()
 
         # Adding a title to the window
-        self.wm_title("Test Application")
+        self.wm_title("Melanoma Detector")
 
         #self.Bf = bayesianFusion(self.path)
 

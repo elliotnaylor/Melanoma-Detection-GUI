@@ -85,15 +85,14 @@ class Segmentation:
         dst = cv2.inpaint(img,mask,6,cv2.INPAINT_TELEA)
 
     #Load the pre-trained model, predict and return the results
-    def segNet(img, model_path):
+    def segNet(self, img, model_path):
         
         #img = img[np.newaxis, ...] #Prediction requires an array of images
 
         #Load a pre=trained model of SegNet
         model = Segnet.getModelSegnet((192, 256, 3))
 
-        model.compile(optimizer= Adam(learning_rate=0.001), 
-              loss = 'binary_crossentropy')
+        model.compile(optimizer= Adam(learning_rate=0.001), loss = 'binary_crossentropy')
 
         model.load_weights(model_path)
         

@@ -35,7 +35,7 @@ import csv
 
 
 def count_white_pixels(image):
-    return np.sum(image == 255) / 255
+    return np.sum(image > 10) / 255
 
 def csv_to_array(path):
     return np.genfromtxt (path, delimiter=",", dtype=str)
@@ -56,15 +56,16 @@ def white_pixels(img):
 class ABCD_Rules:
 
     #Path to dataset on main PC
-    #folder_path = 'D:\\Datasets\\ISIC_2018\\Resized\\Training\\'
+    folder_path = 'D:\\Datasets\\ISIC_2018\\Resized\\Training\\'
     
     #path to dataset on laptop
-    folder_path = 'C:\\Users\\el295904\\Dataset\\ISIC_2018\\Resized\\'
+    #folder_path = 'C:\\Users\\el295904\\Dataset\\ISIC_2018\\Resized\\'
     
     csv_path = os.path.join(os.getcwd(), 'data\\ISIC_2017_GroundTruth.csv')
     save_path = os.path.join(os.getcwd(), 'data\\ISIC_2017_generated.csv')
     model_path = os.path.join(os.getcwd(), 'models\\')
 
+    segmentation = Segmentation()
     asymmetry = Asymmetry()
     #border = Border()
     #colour = Colour()
@@ -138,10 +139,10 @@ class ABCD_Rules:
         masked_array = []
 
         #Initalize SegNet
-        masks = Segmentation.segNet(images, self.model_path + filename)
+        masks = self.segmentation.segNet(images, self.model_path + filename)
         
         #Convert float32 to uint8 and convert single pixel value to tuple
-        masks = masks*255
+        masks *= 255
         masks = masks.astype(np.uint8)
 
         for i in range(0, len(masks)):
@@ -153,7 +154,7 @@ class ABCD_Rules:
 
             #Apply a mask using OpenCV
             masked_array.append(apply_mask_cv(images[i], rgb_mask))
-
+            
         return mask_array, masked_array
     
 
@@ -168,8 +169,9 @@ class ABCD_Rules:
         
         file_name = os.path.splitext(os.path.basename(file_path))[0]
 
-        img = cv2.imread(file_path)
-
+        #Load image using Pillow, loading using OpenCV produces different RGB values
+        img = Image.open(file_path)
+        img = np.array(img)
         img = img[np.newaxis, ...] #Prediction requires an array of image
 
         #Segment
@@ -211,7 +213,7 @@ class ABCD_Rules:
                         print("Error: No image data found on " + file_name)
 
         #Pigment Network
-        p_masks, p_masked = self.getSegmentation(img, 'network.h5')            
+        p_masks, p_masked = self.getSegmentation(img, 'network.h5')
 
         variables[4] = white_pixels(p_masks[0])
 

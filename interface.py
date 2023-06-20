@@ -20,14 +20,18 @@ def csv_to_array(path):
 
 class MainApplication(tk.Tk, ABCD_Rules) :
 
-    image_main = []
     tk_image = []
-    image_graph = []
-    seg_img = []
+    tk_graph = []
+    tk_mask = []
+    tk_pigment = []
 
-    path = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete5.csv'
-    path_data = 'D:/Datasets/ISIC_2018/ISIC_2017_GroundTruth_complete.csv'
+    IMG_SHAPE = (360, 360)
     
+    def prepareImage(self, img):
+        img.thumbnail(self.IMG_SHAPE)
+        return ImageTk.PhotoImage(img)
+    
+
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
@@ -36,14 +40,13 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         # Adding a title to the window
         self.wm_title("Melanoma Detector")
 
-        #self.Bf = bayesianFusion(self.path)
-
         # creating a frame and assigning it to container
         container = tk.Frame(self, height=400, width=600)
         # specifying the region where the frame is packed in root
         container.pack(side="top", fill="both", expand=True)
 
         DROP_DOWN_OPTIONS = [0, 1]
+        MASK_DROP_DOWN = ['Original', 'Lesion', 'Asymmetry', 'Pigment']
 
         # configuring the location of the container using grid
         container.grid_rowconfigure(2, weight=1)
@@ -144,8 +147,11 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         self.lesion_name_label = tk.Label(lesion_info_frame, text="No image loaded")
         self.lesion_name_label.grid(row=1, column=0, padx=20, pady=5)
 
-        more_info_button = tk.Button(lesion_info_frame, text="More info", command=lambda : self.show_segmentation())
-        more_info_button.grid(row = 2, column = 0, padx=20, pady=5)
+        self.masks_combo = ttk.Combobox(lesion_info_frame, values=MASK_DROP_DOWN)
+        self.masks_combo.grid(row=2, column=0, padx=10, pady=5)
+
+        more_info_button = tk.Button(lesion_info_frame, text="show", command=lambda : self.show_image())
+        more_info_button.grid(row = 2, column = 1, padx=10, pady=5)
 
         bayesian_info_frame = tk.LabelFrame(container, text="Bayesian")
         bayesian_info_frame.grid(row=1, column=2, padx=20, pady=10)
@@ -155,6 +161,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         self.bayesian_name_label = tk.Label(bayesian_info_frame, text="No data loaded")
         self.bayesian_name_label.grid(row=1, column=0, padx=20, pady=5)
     
+
     def run(self):
         print("Run pressed")
 
@@ -165,7 +172,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
             int(self.negative_network_combo.get()),
             int(self.network_combo.get()),
             int(self.streaked_combo.get()) 
-            ]
+        ]
 
         weights = self.predictImage(variables)
         
@@ -181,80 +188,39 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         buffer = BytesIO()
         plt.savefig(buffer,format='png')
         image = Image.open(buffer)
-
-        image.thumbnail((360, 360))
         
-        self.image_graph = ImageTk.PhotoImage(image)
+        self.image_graph = self.prepareImage(image)
 
         self.bayesian_name_label.configure(image = self.image_graph)
 
         plt.clf()
 
-        '''
-        globules = int(self.globules_combo.get())
-        milia = int(self.milia_combo.get())
-        negative = int(self.negative_network_combo.get())
-        network = int(self.network_combo.get())
-        streaked = int(self.streaked_combo.get())
-        dermo = globules + milia + negative + network + streaked
-        
-        if dermo > 4:
-            dermo = 4
-        
-        
-        weights = self.Bf.predict(
-            globules, 
-            milia, 
-            negative, 
-            network, 
-            streaked, 
-            dermo)
-
-        data = {'Benign Naevi':weights[0], 'Seborriec':weights[1], 'Melanoma':weights[2]}        
-
-        courses = list(data.keys())
-        values = list(data.values())
-
-        #fig = plt.figure(figsize = (10, 10))
-
-        plt.bar(courses, values)
-
-        buffer = BytesIO()
-        plt.savefig(buffer,format='png')
-        image = Image.open(buffer)
-
-        image.thumbnail((360, 360))
-        
-        self.image_graph = ImageTk.PhotoImage(image)
-
-        self.bayesian_name_label.configure(image = self.image_graph)
-
-        plt.clf()
-        '''
 
     def load_image(self):
-
-        #Load image from file location
         print("Load_Image pressed")
 
+        #Open dialog box and look for png, jpg, and bmp images
         filepath = filedialog.askopenfilename(initialdir = "/",
                                           title = "Select a File",
                                           filetypes = (("Image file",
-                                                        "*.png ? *.jpg ? *.bmp"),
-                                                       ("all files",
-                                                "*.*")))
+                                            "*.png ? *.jpg ? *.bmp"),
+                                          ("all files", "*.*")))
+        
+        #Analyse image and return masks
+        mask, p_mask, variables = self.analyseImage(filepath)
+        
+        #Save masks and lablelled images for displaying
         image = Image.open(filepath)
+        self.tk_image = self.prepareImage(image)
+        
+        mask = Image.fromarray(mask)
+        self.tk_mask = self.prepareImage(mask)
+        
+        p_mask = Image.fromarray(p_mask)
+        self.tk_pigment = self.prepareImage(p_mask)
+        
 
-        image.thumbnail((360, 360))
-
-        #Update tje lesion label with the image
-        self.tk_image = ImageTk.PhotoImage(image)
-
-        self.lesion_name_label.configure(image=self.tk_image)
-
-        #Currently returns asy, glob, 
-        variables = self.analyseImage(filepath)
-
+        #Set boxes to the values automatically detected using analyseImage()
         self.asymmetry_name_entry.delete(0, tk.END)
         self.asymmetry_name_entry.insert(0, variables[0])
 
@@ -263,33 +229,30 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         self.negative_network_combo.current(variables[3])
         self.network_combo.current(variables[4])
         self.streaked_combo.current(variables[5])
-               
-        self.run()
         
-        #self.dermo_name_entry.configure(state="normal")
-        #self.dermo_name_entry.delete(0, tk.END)
-        #self.dermo_name_entry.insert(0, array[i][9])
-        #self.dermo_name_entry.configure(state="disabled")
+        #Display images in 'lesion_name_label' relating to combobox value
+        self.show_image()
+        
+        self.run()
 
-        '''
-        for i in range(0, len(array)):
-            if filename == array[i][0]:
 
-                self.globules_combo.current(array[i][4])
-                self.milia_combo.current(array[i][5])
-                self.negative_network_combo.current(array[i][6])
-                self.network_combo.current(array[i][7])
-                self.streaked_combo.current(array[i][8])
+    #Checks combobox value and displays the corrisponding image
+    def show_image(self):
+        value = self.masks_combo.get()
+        image = self.tk_image
+        
+        print('Showing image ' + value + ' in show_Image()')
 
-                self.dermo_name_entry.configure(state="normal")
-                self.dermo_name_entry.delete(0, tk.END)
-                self.dermo_name_entry.insert(0, array[i][9])
-                self.dermo_name_entry.configure(state="disabled")
-                self.run()
-        '''
+        #Checks value of combobox and gets the relevant image
+        if value == 'Original':
+            image = self.tk_image
+        elif value == 'Lesion':
+            image = self.tk_mask
+        elif value == 'Pigment':
+            image = self.tk_pigment
 
-    def show_segmentation(self):
-        print('Lesion more Info button pressed')
+        self.lesion_name_label.configure(image=image)
+
 
 if __name__ == "__main__":
     testObj = MainApplication()

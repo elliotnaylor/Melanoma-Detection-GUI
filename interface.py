@@ -50,11 +50,11 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         container.grid_columnconfigure(2, weight=1)
         
         info_frame =tk.LabelFrame(container, text="Information")
-        info_frame.grid(row=0,rowspan=3, column=0, padx=20, pady=20)
+        info_frame.grid(row=0,rowspan=3, column=0, padx=20, pady=10)
         
         # Saving User Info
         abcd_info_frame =tk.LabelFrame(info_frame, text="ABCD Rules", highlightthickness=0, borderwidth = 0)
-        abcd_info_frame.grid(row= 0, column=0, padx=20, pady=20)
+        abcd_info_frame.grid(row= 0, column=0, padx=20, pady=10, sticky="W")
 
         asymmetry_name_label = tk.Label(abcd_info_frame, text="Asymmetry")
         asymmetry_name_label.grid(row=0, column=0, padx=10, pady=5)
@@ -75,11 +75,11 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         dermo_name_label = tk.Label(abcd_info_frame, text="Dermoscopic")
         dermo_name_label.grid(row=3, column=0, padx=10, pady=5)
         self.dermo_name_entry = tk.Entry(abcd_info_frame, state="disabled")
-        self.dermo_name_entry.grid(row=3, column=1, padx=10, pady=5)
+        self.dermo_name_entry.grid(row=3, column=1, padx=10, pady=5, sticky="W")
 
         #Section on dermoscopic structures
         structures_info_frame =tk.LabelFrame(info_frame, text="Dermoscopic Structures", highlightthickness=0, borderwidth = 0)
-        structures_info_frame.grid(row= 1, column=0, padx=20, pady=20)
+        structures_info_frame.grid(row= 1, column=0, padx=20, pady=10)
 
         network_name_label = tk.Label(structures_info_frame, text="Pigment Network")
         network_name_label.grid(row=0, column=0, padx=10, pady=5)
@@ -108,7 +108,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
         #Section on extra patient information including DOB, gender, and location of lesion
         patient_info_frame =tk.LabelFrame(info_frame, text="Patient information", highlightthickness=0, borderwidth = 0)
-        patient_info_frame.grid(row= 2, column=0, padx=20, pady=20)
+        patient_info_frame.grid(row= 2, column=0, padx=20, pady=10, sticky="W")
 
         dob_name_label = tk.Label(patient_info_frame, text="Date of Birth")
         dob_name_label.grid(row=0, column=0, padx=20, pady=5)
@@ -127,7 +127,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
 
         buttons_frame =tk.LabelFrame(info_frame, text="buttons", highlightthickness=0, borderwidth = 0)
-        buttons_frame.grid(row=3, column=0, padx=20, pady=20)
+        buttons_frame.grid(row=3, column=0, padx=20, pady=10, sticky="W")
 
         #Loads dataset, will be removed in future update
         init_button = tk.Button(buttons_frame, text="Run", command=lambda : self.run())
@@ -137,7 +137,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         load_button.grid(row=0, column=1, sticky="news", padx=20, pady=5)
 
         lesion_info_frame = tk.LabelFrame(container, text="Patient information")
-        lesion_info_frame.grid(row=1, column=1, padx=0, pady=20)
+        lesion_info_frame.grid(row=1, column=1, padx=0, pady=10)
         lesion_name_label = tk.Label(lesion_info_frame, width=40, height=20, text="No data loaded")
         lesion_name_label.grid(row=1, column=0, padx=20, pady=5)
 
@@ -148,7 +148,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         more_info_button.grid(row = 2, column = 0, padx=20, pady=5)
 
         bayesian_info_frame = tk.LabelFrame(container, text="Bayesian")
-        bayesian_info_frame.grid(row=1, column=2, padx=20, pady=20)
+        bayesian_info_frame.grid(row=1, column=2, padx=20, pady=10)
         bayesian_name_label = tk.Label(bayesian_info_frame, width=40, height=20, text="No data loaded")
         bayesian_name_label.grid(row=1, column=0, padx=20, pady=5)
 

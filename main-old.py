@@ -11,7 +11,7 @@ from utils.cv import *
 from utils.plot import draw_svm_boundries
 from utils.xlrd import *
 
-from load_PH2 import PH2
+from dataset.load_PH2 import PH2
 
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler

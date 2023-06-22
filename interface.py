@@ -128,7 +128,6 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         location_name_entry = tk.Entry(patient_info_frame)
         location_name_entry.grid(row=2, column=1, padx=10, pady=5)
 
-
         buttons_frame =tk.LabelFrame(info_frame, text="buttons", highlightthickness=0, borderwidth = 0)
         buttons_frame.grid(row=3, column=0, padx=20, pady=10, sticky="W")
 
@@ -219,7 +218,6 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         p_mask = Image.fromarray(p_mask)
         self.tk_pigment = self.prepareImage(p_mask)
         
-
         #Set boxes to the values automatically detected using analyseImage()
         self.asymmetry_name_entry.delete(0, tk.END)
         self.asymmetry_name_entry.insert(0, variables[0])
@@ -252,8 +250,3 @@ class MainApplication(tk.Tk, ABCD_Rules) :
             image = self.tk_pigment
 
         self.lesion_name_label.configure(image=image)
-
-
-if __name__ == "__main__":
-    testObj = MainApplication()
-    testObj.mainloop()

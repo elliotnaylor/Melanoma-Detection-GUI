@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from scipy.spatial import ConvexHull
-
+from skimage import feature
 
 class Border:
 
@@ -40,7 +40,7 @@ class Border:
         sizes = 2**np.arange(n, 1, -1)
 
         #Find amount of generated boxes for caluclating the score
-        count = []
+        counts = []
         for size in sizes:
             counts.append(self.number_boxes(border, size))
 
@@ -50,10 +50,10 @@ class Border:
 
         return -coeff[0]
         
-    def zernike_moments():
+    def zernike_moments(self, mask):
         #https://peerj.com/articles/cs-268/
 
-        #1. Canny segmentation of mask for caluckating fractal score
+        #1. Canny segmentation of mask for calculating fractal score
         edges = feature.canny(mask, sigma=3)
 
         #2. Calculate box-counting fractal dimension (Requires gray scale)

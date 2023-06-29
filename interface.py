@@ -175,15 +175,39 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
         weights = self.predictImage(variables)
         
-        data = {'Benign Naevi':weights[0], 'Seborriec':weights[1], 'Melanoma':weights[2]}        
+        self.generateGraph(weights)
+
+
+    def generateGraph(self, value):
+
+        data = {'Benign Naevi':value[0], 'Seborriec':value[1], 'Melanoma':value[2]}        
 
         courses = list(data.keys())
         values = list(data.values())
 
-        #fig = plt.figure(figsize = (10, 10))
+        fig, ax = plt.subplots(figsize=(16,10))
 
-        plt.bar(courses, values)
+        #Rotate the bar chart horizontally
+        ax.barh(courses, values)
 
+        #Add grid lines
+        ax.grid(color ='grey',
+        linestyle ='-.', linewidth = 0.5,
+        alpha = 0.2)
+
+        #Displays the number alongside the bar graph
+        for i in ax.patches:
+            plt.text(i.get_width()+0.2, i.get_y()+0.5,
+                     str(round((i.get_width()), 2)),
+                     fontsize = 20, fontweight ='bold',
+                     color ='grey')
+            
+    
+        '''
+        Saves the figure to a memory buffer
+        Opens it with 'Image' library
+        Displays the image to the screen
+        '''
         buffer = BytesIO()
         plt.savefig(buffer,format='png')
         image = Image.open(buffer)

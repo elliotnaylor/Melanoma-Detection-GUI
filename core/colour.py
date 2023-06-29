@@ -9,6 +9,7 @@ from utils.plot import *
 from utils.math import *
 
 from scipy.spatial import ConvexHull
+from sklearn.cluster import KMeans
 
 class Colour:
 
@@ -29,11 +30,14 @@ class Colour:
     def __init__(self):
         pass
 
+
     def rgb_to_hex(self, rgb):
         return '#%02x%02x%02x' % (int(rgb[0]), int(rgb[1]), int(rgb[2]))
         
+
     def histogram3d(self, image):
         pass
+
 
     def getColourRanges(self):
         locations = []
@@ -58,7 +62,7 @@ class Colour:
                 #Remove superpixels that are black
                 value = self.image[x, y][0] + self.image[x, y][1] + self.image[x, y][2]
 
-                if value > 0 and x < lab.shape[0] and y < lab.shape[1]: #regions returns some values outside of the size of the image
+                if value > 10 and x < lab.shape[0] and y < lab.shape[1]: #regions returns some values outside of the size of the image
                     locations.append((x, y))
         
         #1. Find the location of the closest colour to the 7 lesion colours for k-means starting locations
@@ -68,7 +72,7 @@ class Colour:
             col = -1
             
             #Find closest colour location
-            for c in self.colours:
+            for c in range(0, self.colours):
             
                 dis = euclidean3d(lab[l[0], l[1]], self.colour_ranges[c])
                 
@@ -94,24 +98,36 @@ class Colour:
 
         return closest_colours, number_colour
 
-    def run(self, _images, _masked_images, _masks, _colours):
+
+    def run(self, _images, _masked_images, _masks, _colours = 6):
         locations = []
         colours = []
 
-        for i in range(0, 1):
-            print(i)
-            #draw_image(_masked_images[i])
-        
-            self.colours = _colours[i]
-            self.image = cv2.GaussianBlur(_masked_images[i],(11, 11), 0)
-            lab = cv2.cvtColor(self.image, cv2.COLOR_BGR2LAB)
-        
-            pos, col = self.getColourRanges()
-        
-            for i in range(0, len(col)):
-                locations.append((pos[i][0], pos[i][1], pos[i][2]))
-                colours.append(col[i])
+        #draw_image(_masked_images[i])
+    
+        self.colours = _colours
 
+        self.image = cv2.GaussianBlur(_masked_images, (11, 11), 0)
+        lab = cv2.cvtColor(self.image, cv2.COLOR_BGR2LAB)
+    
+        pos, col = self.getColourRanges() #Pos is array of [(x, y)] [(l,a,b)]
+    
+        '''
+        #Removes locations of pixels that aren't associated with one of the 6 colours
+        for i in range(0, len(col)):
+            locations.append((pos[i][0], pos[i][1], pos[i][2]))
+            colours.append(col[i])
+        '''
+
+        return pos, col
+
+
+    '''
+    Colour pallete is already pre-defined in 'colour_ranges', but the 
+    below code can be used to generate one using the Ph2 dataset
+    '''
+    def generateArea(self):
+        
         #Find colour pallete of an image 
         for i in range(0, 200):
             #k-means to locate the colour centroid of the colour values
@@ -148,4 +164,3 @@ class Colour:
 
                 if col > -1:
                     colour.append(col)
-

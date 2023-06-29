@@ -68,7 +68,7 @@ class ABCD_Rules:
     segmentation = Segmentation()
     asymmetry = Asymmetry()
     #border = Border()
-    #colour = Colour()
+    colour = Colour()
 
     structure = ['Diagnosis', 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
 
@@ -185,6 +185,7 @@ class ABCD_Rules:
         #Border
 
         #Colour
+        position, number_colours = self.colour.run(img[0], masked[0], masks[0])
 
         #Dermoscopic structure
         dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
@@ -221,7 +222,7 @@ class ABCD_Rules:
 
 
     '''
-    #Variables are values in the interface, that are saved and used for
+    Variables are values in the interface, that are saved and used for
     predition. Call analyseImage() first before predictImage().
     '''
     def predictImage(self, variables):

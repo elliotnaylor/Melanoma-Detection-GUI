@@ -17,14 +17,14 @@ class bayesianFusion:
         #edges = [('Globules','Diagnosis'), ('Milia','Diagnosis'), ('Negative','Diagnosis'), ('Pigment','Diagnosis'), ('Streaks','Diagnosis'), ('Structures', 'Diagnosis')]
 
         edges = [
-            ('Asymmetry', 'Diagnosis'),
-            ('Globules','Diagnosis'), 
-            ('Milia','Diagnosis'), 
-            ('Negative','Diagnosis'), 
-            ('Pigment','Diagnosis'), 
-            ('Streaks','Diagnosis')]
+            ('Diagnosis', 'Asymmetry'),
+            ('Diagnosis','Globules'), 
+            ('Diagnosis', 'Milia'), 
+            ('Diagnosis','Negative'), 
+            ('Diagnosis','Pigment'), 
+            ('Diagnosis','Streaks')]
 
-        DAG = bn.make_DAG(edges, methodtype='bayes')
+        DAG = bn.make_DAG(edges, methodtype='naivebayes') #Use naive bayes 
 
         #fig = bn.plot(DAG)
 
@@ -32,8 +32,8 @@ class bayesianFusion:
         self.DAG_update = bn.parameter_learning.fit(DAG, self.df)
 
         #Generate samples and re-train based on those samples
-        df_sampling = bn.sampling(DAG, n=10000)
-        self.DAG_update = bn.parameter_learning.fit(DAG, df_sampling)
+        #df_sampling = bn.sampling(DAG, n=10000)
+        #self.DAG_update = bn.parameter_learning.fit(DAG, df_sampling)
 
         #Pout = bn.predict(self.DAG_update, self.df, variables=['Diagnosis', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks', 'Structures'])
 

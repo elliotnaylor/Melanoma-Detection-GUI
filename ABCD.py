@@ -56,10 +56,10 @@ def white_pixels(img):
 class ABCD_Rules:
 
     #Path to dataset on main PC
-    #folder_path = 'D:\\Datasets\\ISIC_2018\\Resized\\Training\\'
+    folder_path = 'D:\\Datasets\\ISIC_2018\\Resized\\Training\\'
     
     #path to dataset on laptop
-    folder_path = 'C:\\Users\\el295904\\Dataset\\ISIC_2018\\Resized\\'
+    #folder_path = 'C:\\Users\\el295904\\Dataset\\ISIC_2018\\Resized\\'
     
     csv_path = os.path.join(os.getcwd(), 'data\\ISIC_2017_GroundTruth.csv')
     save_path = os.path.join(os.getcwd(), 'data\\ISIC_2017_generated.csv')

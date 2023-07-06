@@ -45,7 +45,9 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         # specifying the region where the frame is packed in root
         container.pack(side="top", fill="both", expand=True)
 
-        DROP_DOWN_OPTIONS = [0, 1]
+        DROP_DOWN_OPTIONS = [-1, 0, 1]
+        DROP_DOWN_OPTIONS_WORDS = ["Don't know", "No", "Yes"]
+
         MASK_DROP_DOWN = ['Segmentation', 'Asymmetry', 'Pigment']
 
         # configuring the location of the container using grid
@@ -250,13 +252,13 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         
         #Set boxes to the values automatically detected using analyseImage()
         self.asymmetry_name_entry.delete(0, tk.END)
-        self.asymmetry_name_entry.insert(0, variables[0])
+        self.asymmetry_name_entry.insert(0, variables[0]+1)
 
-        self.globules_combo.current(variables[1])
-        self.milia_combo.current(variables[2])
-        self.negative_network_combo.current(variables[3])
-        self.network_combo.current(variables[4])
-        self.streaked_combo.current(variables[5])
+        self.globules_combo.current(variables[1]+1)
+        self.milia_combo.current(variables[2]+1)
+        self.negative_network_combo.current(variables[3]+1)
+        self.network_combo.current(variables[4]+1)
+        self.streaked_combo.current(variables[5]+1)
         
         #Display images in 'lesion_name_label' relating to combobox value
         self.show_image()
@@ -267,7 +269,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
     #Checks combobox value and displays the corrisponding image
     def show_image(self):
         value = self.masks_combo.get()
-        image = self.tk_image
+        image = self.tk_mask
         
         print('Showing image ' + value + ' in show_Image()')
 

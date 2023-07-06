@@ -227,14 +227,18 @@ class ABCD_Rules:
     '''
     def predictImage(self, variables):
         
-        weights = self.Bf.predict(
-            variables[0], #Asymmetry
-            variables[1], #Globules
-            variables[2], #Milia
-            variables[3], #Negative 
-            variables[4], #Network
-            variables[5]) #Streaked
-        
+        NAMES = 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks'
+
+        #evidence={'Asymmetry': _a, 'Globules':_g, 'Milia':_m, 'Negative':_n, 'Pigment':_p, 'Streaks':_s}
+
+        evidence = {}
+        prediction = []
+        names = []
+        for i in range(0, len(variables)):
+            if variables[i] != -1:
+                evidence[NAMES[i]] = variables[i] 
+                
+        weights = self.Bf.predict(evidence)
         
         return weights
 

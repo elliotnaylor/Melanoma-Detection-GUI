@@ -39,11 +39,13 @@ class bayesianFusion:
 
         #print(Pout)
 
-    def predict(self, _a, _g, _m, _n, _p, _s):
+    def predict(self, _evidence):
 
         #4. Predict
-        query = bn.inference.fit(self.DAG_update,  variables=['Diagnosis'], evidence={ 'Asymmetry': _a, 'Globules':_g, 'Milia':_m, 'Negative':_n, 'Pigment':_p, 'Streaks':_s})
+        query = bn.inference.fit(self.DAG_update,  variables=['Diagnosis'], evidence=_evidence)
 
+        #evidence={'Asymmetry': _a, 'Globules':_g, 'Milia':_m, 'Negative':_n, 'Pigment':_p, 'Streaks':_s}
+        
         #print(query)
         #print(bn.query2df(query))
         

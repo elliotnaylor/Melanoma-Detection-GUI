@@ -46,7 +46,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         container.pack(side="top", fill="both", expand=True)
 
         DROP_DOWN_OPTIONS = [0, 1]
-        MASK_DROP_DOWN = ['Original', 'Lesion', 'Asymmetry', 'Pigment']
+        MASK_DROP_DOWN = ['Segmentation', 'Asymmetry', 'Pigment']
 
         # configuring the location of the container using grid
         container.grid_rowconfigure(2, weight=1)
@@ -146,11 +146,14 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         self.lesion_name_label = tk.Label(lesion_info_frame, text="No image loaded")
         self.lesion_name_label.grid(row=1, column=0, padx=20, pady=5)
 
+        self.seg_name_label = tk.Label(lesion_info_frame, text="No image loaded")
+        self.seg_name_label.grid(row=2, column=0, padx=20, pady=5)
+
         self.masks_combo = ttk.Combobox(lesion_info_frame, values=MASK_DROP_DOWN)
-        self.masks_combo.grid(row=2, column=0, padx=10, pady=5)
+        self.masks_combo.grid(row=3, column=0, padx=10, pady=5)
 
         more_info_button = tk.Button(lesion_info_frame, text="show", command=lambda : self.show_image())
-        more_info_button.grid(row = 2, column = 1, padx=10, pady=5)
+        more_info_button.grid(row = 3, column = 1, padx=10, pady=5)
 
         bayesian_info_frame = tk.LabelFrame(container, text="Bayesian")
         bayesian_info_frame.grid(row=1, column=2, padx=20, pady=10)
@@ -235,10 +238,13 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         #Save masks and lablelled images for displaying
         image = Image.open(filepath)
         self.tk_image = self.prepareImage(image)
-        
+
+        self.lesion_name_label.configure(image=self.tk_image)
+
         mask = Image.fromarray(mask)
         self.tk_mask = self.prepareImage(mask)
         
+
         p_mask = Image.fromarray(p_mask)
         self.tk_pigment = self.prepareImage(p_mask)
         
@@ -266,11 +272,9 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         print('Showing image ' + value + ' in show_Image()')
 
         #Checks value of combobox and gets the relevant image
-        if value == 'Original':
-            image = self.tk_image
-        elif value == 'Lesion':
+        if value == 'Segmentation':
             image = self.tk_mask
         elif value == 'Pigment':
             image = self.tk_pigment
 
-        self.lesion_name_label.configure(image=image)
+        self.seg_name_label.configure(image=image)

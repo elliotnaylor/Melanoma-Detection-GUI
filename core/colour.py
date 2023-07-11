@@ -25,6 +25,7 @@ class Colour:
     #-127 > a > 127 ⇒ OpenCV range = a + 128 (1 > a > 255)
     #-127 > b > 127 ⇒ OpenCV range = b + 128 (1 > b > 255)
     colour_ranges = ((173.9865, 139.43, 149.62), (99.807, 140.9, 125.21), (153.816, 155.21, 172.48), (106.794, 139.44, 132.4), (95.9055, 132.88, 113.366), (77.2395, 136.06, 128.34))
+
     colour_names = ('#f6ceaf', '#db4545', '#b66b0f', '#5e3e25', '#5e6889', '#250000') #Colours in hex for pyplot
 
     def __init__(self):
@@ -94,7 +95,7 @@ class Colour:
         
         for i in range(0, len(number_colour)):
             ax.scatter(closest_colours[i][0], closest_colours[i][1], closest_colours[i][2], c=self.colour_names[number_colour[i]], marker='o')
-        plt.show()
+        #plt.show()
 
         return closest_colours, number_colour
 

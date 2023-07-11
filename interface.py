@@ -204,7 +204,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         for i in ax.patches:
             plt.text(i.get_width()+0.2, i.get_y()+0.5,
                      str(round((i.get_width()), 2)),
-                     fontsize = 20, fontweight ='bold',
+                     fontsize = 30, fontweight ='bold',
                      color ='grey')
             
     
@@ -246,7 +246,6 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         mask = Image.fromarray(mask)
         self.tk_mask = self.prepareImage(mask)
         
-
         p_mask = Image.fromarray(p_mask)
         self.tk_pigment = self.prepareImage(p_mask)
         

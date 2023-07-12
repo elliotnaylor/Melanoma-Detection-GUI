@@ -120,7 +120,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         dob_name_entry = tk.Entry(patient_info_frame)
         dob_name_entry.grid(row=0, column=1, padx=10, pady=5)
 
-        gender_name_label = tk.Label(patient_info_frame, text="Gender")
+        gender_name_label = tk.Label(patient_info_frame, text="Sex")
         gender_name_label.grid(row=1, column=0, padx=20, pady=5)
         gender_name_entry = tk.Entry(patient_info_frame)
         gender_name_entry.grid(row=1, column=1, padx=10, pady=5)

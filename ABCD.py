@@ -187,6 +187,21 @@ class ABCD_Rules:
         #Colour
         position, number_colours = self.colour.run(img[0], masked[0], masks[0])
 
+        res = 1
+
+        #Iterate thorugh all elements and count if any differnt variable are found
+        for i in range(1, len(number_colours)):
+            j = 0
+            for j in range(i):
+                if (number_colours[i] == number_colours[j]):
+                    break
+
+            #If not the same location in the array then add one
+            if (i == j + 1):
+                res += 1
+        
+
+
         #Dermoscopic structure
         dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
 
@@ -232,14 +247,17 @@ class ABCD_Rules:
         #evidence={'Asymmetry': _a, 'Globules':_g, 'Milia':_m, 'Negative':_n, 'Pigment':_p, 'Streaks':_s}
 
         evidence = {}
-        prediction = []
-        names = []
+
         for i in range(0, len(variables)):
-            if variables[i] != -1:
-                evidence[NAMES[i]] = variables[i] 
-                
+            if variables[i] != -1: #-1 means "Don't know" and to exclude it
+                evidence[NAMES[i]] = variables[i] #Dictionary of variable
+
+        #Predict based on the variables provided        
         weights = self.Bf.predict(evidence)
         
+        #Remove each and re-predict to find out which features matter most
+        
+
         return weights
 
 

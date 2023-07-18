@@ -67,7 +67,7 @@ class ABCD_Rules:
 
     segmentation = Segmentation()
     asymmetry = Asymmetry()
-    #border = Border()
+    border = Border()
     colour = Colour()
 
     structure = ['Diagnosis', 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
@@ -156,7 +156,6 @@ class ABCD_Rules:
             masked_array.append(apply_mask_cv(images[i], rgb_mask))
             
         return mask_array, masked_array
-    
 
     '''
     Gets metadata on the loaded image using the interface.
@@ -183,6 +182,7 @@ class ABCD_Rules:
         variables.append(asymmetry)
 
         #Border
+        border = self.border.run(masks[0])
 
         #Colour
         position, number_colours = self.colour.run(img[0], masked[0], masks[0])
@@ -192,6 +192,7 @@ class ABCD_Rules:
         #Iterate thorugh all elements and count if any differnt variable are found
         for i in range(1, len(number_colours)):
             j = 0
+            
             for j in range(i):
                 if (number_colours[i] == number_colours[j]):
                     break
@@ -200,8 +201,6 @@ class ABCD_Rules:
             if (i == j + 1):
                 res += 1
         
-
-
         #Dermoscopic structure
         dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
 

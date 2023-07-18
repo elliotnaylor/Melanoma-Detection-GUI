@@ -92,6 +92,17 @@ class Border:
             vectors.append(m)
 
         #6. CNN consisting of two layers
+        '''
+        CNN involves testing for irregularity of the image and not the vectors.
+
+        The CNN diagnosis is then used as a label to train a gaussian naive bayes.
+        '''
+
+        return vectors
 
     def run(self, mask):
         mask = cv2.cvtcolor(mask, cv2.COLOR_BGR2GRAY)
+
+        vectors = self.zernike_moments(mask)
+
+        return vectors

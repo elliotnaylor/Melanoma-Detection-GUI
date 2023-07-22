@@ -67,7 +67,7 @@ class ABCD_Rules:
 
     segmentation = Segmentation()
     asymmetry = Asymmetry()
-    border = Border()
+    #border = Border()
     colour = Colour()
 
     structure = ['Diagnosis', 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
@@ -83,7 +83,7 @@ class ABCD_Rules:
         Uncaption when training new Bayesian network, needs 'csv_path'
         file with file names in first column, see file.
         '''
-        #self.generateMetdata()
+        self.generateMetdata()
 
         #Train bayesian network based on the provided metadata
         self.Bf = bayesianFusion(self.save_path)
@@ -107,26 +107,38 @@ class ABCD_Rules:
         
         img_array = np.array(img_array)
         
-        masks, masked = self.getSegmentation(img_array)
+        masks, masked = self.getSegmentation(img_array, 'skin_lesion.h5')
         
         for i in range(0, len(masks)):
             #Gets asymmetry of image, needs img, mask, and masked images
             dataH, dataV, asymmetry = self.asymmetry.run(img_array[i], masked[i], masks[i])
 
             array[i+1][2] = asymmetry
-            print("Finished image: " + i + " out of " + len(masks))
+            #print("Finished image: " + i + " out of " + len(masks))
+
+            #White, red, light_brown, dark brown, blue-gray and black (0 not present, 1 present)
+            colours = [0, 0, 0, 0, 0, 0]
+            position, number_colours = self.colour.run(img_array[i], masked[i], masks[i])
+
+            #Label that the colour exists in order of white, red, light_brown, dark brown, blue-gray and black
+            for j in range(0, len(number_colours)):
+                colours[number_colours[j]] = 1
+
+            for j in range(0, len(colours)):
+                array[i+1][j+3] = colours[j]
 
 
-        '''
-        CSV is already populated with dermoscopic structures.
-        Will be replaced with automatic detection in the future.
-        '''
+            '''
+            CSV is already populated with dermoscopic structures.
+            Will be replaced with automatic detection in the future.
+            '''
+            
+            save = array
+            #Removing headers and filenames for bayesian network training
+            np.delete(save, 0, 0) #Delete headers
+            save[:,1:] #Remove column 0 containing all the names        
 
-        #Removing headers and filenames for bayesian network training
-        np.delete(array, 0, 0) #Delete headers
-        array[:,1:] #Remove column 0 containing all the names        
-
-        array_to_csv(array, self.save_path)
+            array_to_csv(save, self.save_path)
 
 
     '''
@@ -182,30 +194,26 @@ class ABCD_Rules:
         variables.append(asymmetry)
 
         #Border
-        border = self.border.run(masks[0])
+        #border = self.border.run(masks[0])
 
         #Colour
         position, number_colours = self.colour.run(img[0], masked[0], masks[0])
 
-        res = 1
-
-        #Iterate thorugh all elements and count if any differnt variable are found
-        for i in range(1, len(number_colours)):
-            j = 0
-            
-            for j in range(i):
-                if (number_colours[i] == number_colours[j]):
-                    break
-
-            #If not the same location in the array then add one
-            if (i == j + 1):
-                res += 1
+        #White, red, light_brown, dark brown, blue-gray and black (0 not present, 1 present)
+        colours = [0, 0, 0, 0, 0, 0]
         
-        #Dermoscopic structure
-        dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
+        #Label that the colour exists in order of white, red, light_brown, dark brown, blue-gray and black
+        for i in range(0, len(number_colours)):
+            colours[number_colours[i]] = 1
+
+        for c in colours:
+            variables.append(c)
 
         #Numpy function to pass CSV file into an array
         array = csv_to_array(self.csv_path)
+
+        #Dermoscopic structure
+        dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
 
         '''
         Get dermoscopic structures, currently on whether there 
@@ -233,7 +241,6 @@ class ABCD_Rules:
         variables[4] = white_pixels(p_masks[0])
 
         return masks[0], p_masks[0], variables
-
 
     '''
     Variables are values in the interface, that are saved and used for

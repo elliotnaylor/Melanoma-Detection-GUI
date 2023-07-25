@@ -45,8 +45,10 @@ class Colour:
     range_colours_max = [(255, 139, 54), (166, 93, 31), (144, 72, 60)]
     '''
 
+    #Red was originally 54.29, 80.81, 69.89
+
     thresh_names = 0, 1, 4
-    thresh_colours = [(100, 0, 0), (54.29, 80.81, 69.89), (50.28, -30.14, -11.96)]
+    thresh_colours = [(100, 0, 0), (45.71, 67.67, 50.18), (50.28, -30.14, -11.96)]
 
     range_names = 2, 3, 5
     range_colours_min = [(47.94, 11.89, 19.86), (14.32, 6.85, 6.96), (0.06, 0.27, 0.10)]
@@ -142,14 +144,20 @@ class Colour:
 
         hist_bar = np.zeros((50, 300, 3), dtype = "uint8")
 
+        rgb = color.lab2rgb(lab)
+        rgb_colours = color.lab2rgb(avg_colours)
+
+        rgb_colours *= 255
+
         startX = 0
-        for (percent, colour) in zip(hist,  avg_colours): 
+        for (percent, colour) in zip(hist,  rgb_colours): 
             endX = startX + (percent * 300) # to match grid
             cv2.rectangle(hist_bar, (int(startX), 0), (int(endX), 50),
             colour.astype("uint8").tolist(), -1)
             startX = endX
 
-        rgb = color.lab2rgb(lab)
+        
+
 
         #plt.figure(figsize=(15,15))
         #plt.subplot(121)
@@ -217,12 +225,10 @@ class Colour:
 
         #Image loaded as BGR, changes it to RGB
         #img = img.astype("float32") / 255
-        
-        cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
-        
+         
         lab = color.rgb2lab(img)
 
-        draw_image(_masked_image)
+        #draw_image(_masked_image)
         
         self.colours = _colours
 

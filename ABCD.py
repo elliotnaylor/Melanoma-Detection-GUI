@@ -84,7 +84,7 @@ class ABCD_Rules:
         Uncaption when training new Bayesian network, needs 'csv_path'
         file with file names in first column, see file.
         '''
-        self.generateMetdata()
+        #self.generateMetdata()
 
         #Train bayesian network based on the provided metadata
         self.Bf = bayesianFusion(self.save_path)
@@ -153,19 +153,16 @@ class ABCD_Rules:
         mask_array = []
         masked_array = []
         
-        
-
         #Initalize SegNet
         masks = self.segmentation.segNet(images, self.model_path + filename)
         
         threshmask = []
 
-        
-
         #Convert float32 to uint8 and convert single pixel value to tuple
         masks *= 255
         masks = masks.astype(np.uint8)
 
+        #Threshold to make images either black or white and no inbetween
         for m in masks:
             ret, threshold = cv2.threshold(m, 15, 255, cv2.THRESH_BINARY)
             threshmask.append(threshold)
@@ -182,7 +179,7 @@ class ABCD_Rules:
 
             masked = apply_mask_cv(images[i], rgb_mask)
 
-            draw_image(masked)
+            #draw_image(masked)
 
             #Apply a mask using OpenCV
             masked_array.append(masked)
@@ -225,7 +222,7 @@ class ABCD_Rules:
         #border = self.border.run(masks[0])
 
         #Colour
-        position, number_colours = self.colour.run(img[0], masked[0], masks[0])
+        number_colours = self.colour.run(img[0], masked[0], masks[0])
 
         #White, red, light_brown, dark brown, blue-gray and black (0 not present, 1 present)
         colours = [0, 0, 0, 0, 0, 0]

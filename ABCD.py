@@ -72,7 +72,6 @@ class ABCD_Rules:
 
     structure = ['Diagnosis', 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
 
-
     '''
     Train bayesian network based on pre-compiled csv file
     Model will be saved in the future
@@ -118,7 +117,7 @@ class ABCD_Rules:
 
             #White, red, light_brown, dark brown, blue-gray and black (0 not present, 1 present)
             colours = [0, 0, 0, 0, 0, 0]
-            position, number_colours = self.colour.run(img_array[i], masked[i], masks[i])
+            number_colours = self.colour.run(img_array[i], masked[i], masks[i])
 
             #Label that the colour exists in order of white, red, light_brown, dark brown, blue-gray and black
             for j in range(0, len(number_colours)):
@@ -185,12 +184,19 @@ class ABCD_Rules:
         img = np.array(img)
         img = img[np.newaxis, ...] #Prediction requires an array of image
 
+        #Image loaded as BGR, changes it to RGB
+        #img = img[:,:,::-1]
+
+        #plt.imshow(img)
+        #plt.show()
+
         #Segment
         masks, masked = self.getSegmentation(img, 'skin_lesion.h5')
 
         #Asymmetry
         dataH, dataV, asymmetry = self.asymmetry.run(img[0], masked[0], masks[0])
 
+        
         variables.append(asymmetry)
 
         #Border

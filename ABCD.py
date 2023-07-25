@@ -12,6 +12,8 @@ from core.border import Border
 from core.colour import Colour
 from core.segmentation import *
 from core.bayesian import *
+from utils.draw import *
+from utils.plot import *
 
 
 from utils.cv import *
@@ -100,6 +102,7 @@ class ABCD_Rules:
             lesion_path = self.folder_path + 'removed/' + array[i][0] + '.jpg'
 
             img = cv2.imread(lesion_path)
+            
 
             #Segment
             img_array.append(img)
@@ -109,6 +112,7 @@ class ABCD_Rules:
         masks, masked = self.getSegmentation(img_array, 'skin_lesion.h5')
         
         for i in range(0, len(masks)):
+            
             #Gets asymmetry of image, needs img, mask, and masked images
             dataH, dataV, asymmetry = self.asymmetry.run(img_array[i], masked[i], masks[i])
 
@@ -148,23 +152,41 @@ class ABCD_Rules:
     def getSegmentation(self, images, filename):
         mask_array = []
         masked_array = []
+        
+        
 
         #Initalize SegNet
         masks = self.segmentation.segNet(images, self.model_path + filename)
         
+        threshmask = []
+
+        
+
         #Convert float32 to uint8 and convert single pixel value to tuple
         masks *= 255
         masks = masks.astype(np.uint8)
 
-        for i in range(0, len(masks)):
+        for m in masks:
+            ret, threshold = cv2.threshold(m, 15, 255, cv2.THRESH_BINARY)
+            threshmask.append(threshold)
 
+        threshmask = np.array(threshmask)
+        
+
+        for i in range(0, len(threshmask)):
+            
             #Convert into an RGB mask
-            rgb_mask = cv2.cvtColor(masks[i], cv2.COLOR_GRAY2BGR)
+            rgb_mask = cv2.cvtColor(threshmask[i], cv2.COLOR_GRAY2BGR)
             
             mask_array.append(rgb_mask)
 
+            masked = apply_mask_cv(images[i], rgb_mask)
+
+            draw_image(masked)
+
             #Apply a mask using OpenCV
-            masked_array.append(apply_mask_cv(images[i], rgb_mask))
+            masked_array.append(masked)
+            
             
         return mask_array, masked_array
 

@@ -11,13 +11,13 @@ from utils.math import *
 from scipy.spatial import ConvexHull
 from scipy.spatial import distance
 from sklearn.cluster import KMeans
+from skimage import io, color
 
 class Colour:
 
     #Starting colour ranges for white, black, light brown, dark brown, red and blue gray in LAB
     #https://www.researchgate.net/publication/342223285_Towards_the_automatic_detection_of_skin_lesion_shape_asymmetry_color_variegation_and_diameter_in_dermoscopic_images#pfd
 
-    image = []
     colours = []
     THRESH = 50
 
@@ -80,7 +80,7 @@ class Colour:
         pass
 
 
-    def getColourRanges(self):
+    def getColourRanges(self, lab):
         locations = []
         colours = []
         
@@ -122,7 +122,7 @@ class Colour:
                     colours.append((self.image[x, y][0], self.image[x, y][1], self.image[x, y][2]))
         '''
         
-        img = self.image.reshape((self.image.shape[0] * self.image.shape[1],self.image.shape[2]))
+        img = lab.reshape((lab.shape[0] * lab.shape[1], lab.shape[2]))
 
         #1. Find the location of the closest colour to the 7 lesion colours for k-means starting locations
         #Removing colour areas outside the threshold (anomalous data)
@@ -143,18 +143,20 @@ class Colour:
         hist_bar = np.zeros((50, 300, 3), dtype = "uint8")
 
         startX = 0
-        for (percent, color) in zip(hist,  avg_colours): 
+        for (percent, colour) in zip(hist,  avg_colours): 
             endX = startX + (percent * 300) # to match grid
             cv2.rectangle(hist_bar, (int(startX), 0), (int(endX), 50),
-            color.astype("uint8").tolist(), -1)
+            colour.astype("uint8").tolist(), -1)
             startX = endX
 
-        plt.figure(figsize=(15,15))
-        plt.subplot(121)
-        plt.imshow(self.image)
-        plt.subplot(122)
-        plt.imshow(hist_bar)
-        plt.show()
+        rgb = color.lab2rgb(lab)
+
+        #plt.figure(figsize=(15,15))
+        #plt.subplot(121)
+        #plt.imshow(rgb)
+        #plt.subplot(122)
+        #plt.imshow(hist_bar)
+        #plt.show()
 
         new_avg = []
 
@@ -190,6 +192,7 @@ class Colour:
 
                 #If below threshold store value in array
                 if(all(k > self.range_colours_min[c]) and all(k < self.range_colours_max[c])):
+
                     number_colour.append(self.range_names[c])
 
         #closest_colours = np.array(closest_colours)
@@ -210,13 +213,19 @@ class Colour:
 
     def run(self, _image, _masked_image, _mask, _colours = 6):
         
+        img = cv2.cvtColor(_masked_image, cv2.COLOR_BGR2RGB)
+
         #Image loaded as BGR, changes it to RGB
-        self.image = cv2.cvtColor(_masked_image, cv2.COLOR_BGR2LAB)
+        #img = img.astype("float32") / 255
         
-        #draw_image(_masked_image)
+        cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
+        
+        lab = color.rgb2lab(img)
+
+        draw_image(_masked_image)
         
         self.colours = _colours
 
-        col = self.getColourRanges() #Pos is array of [(x, y)] [(l,a,b)]
+        col = self.getColourRanges(lab) #Pos is array of [(x, y)] [(l,a,b)]
     
         return col

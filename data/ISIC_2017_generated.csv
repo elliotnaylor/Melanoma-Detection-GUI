@@ -1,6 +1,6 @@
 image_id,Diagnosis,Asymmetry,White,Red,Light Brown,Dark Brown,Blue-Gray,Black, Globules,Milia-Like Cysts,Negative Network,Pigment Network, Streaks
-ISIC_0000000,0,2,0,0,0,0,0,0,0,0,0,1,0
-ISIC_0000003,0,2,0,0,0,0,0,0,0,1,0,1,0
+ISIC_0000000,0,2,0,0,0,0,1,1,0,0,0,1,0
+ISIC_0000003,0,2,1,0,0,1,1,1,0,1,0,1,0
 ISIC_0000004,2,,,,,,,,0,0,0,0,0
 ISIC_0000006,0,,,,,,,,0,0,0,1,0
 ISIC_0000007,0,,,,,,,,0,0,1,1,0

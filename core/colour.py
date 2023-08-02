@@ -46,9 +46,10 @@ class Colour:
     '''
 
     #Red was originally 54.29, 80.81, 69.89
+    #New red is 45.71, 67.67, 50.18
 
     thresh_names = 0, 1, 4
-    thresh_colours = [(100, 0, 0), (45.71, 67.67, 50.18), (50.28, -30.14, -11.96)]
+    thresh_colours = [(100, 0, 0), (54.29, 80.81, 69.89), (50.28, -30.14, -11.96)]
 
     range_names = 2, 3, 5
     range_colours_min = [(47.94, 11.89, 19.86), (14.32, 6.85, 6.96), (0.06, 0.27, 0.10)]
@@ -98,6 +99,7 @@ class Colour:
         colour_dict = []
 
         #Gets all the possible locations within the colour ranges
+        '''
         for i in range(len(self.colour_min)):
             
             colour_dict.append((i, self.colour_min[i])) 
@@ -107,6 +109,8 @@ class Colour:
                 for a in range(self.colour_min[i][1], self.colour_max[i][1], 10):
                     for b in range(self.colour_min[i][2], self.colour_max[i][2], 10):
                         colour_dict.append((i, (l, a, b)))  
+        '''
+        
 
         #lab = cv2.cvtColor(self.image, cv2.COLOR_RGB2LAB)
 
@@ -124,6 +128,7 @@ class Colour:
                     colours.append((self.image[x, y][0], self.image[x, y][1], self.image[x, y][2]))
         '''
         
+        #Flatten image for k-means
         img = lab.reshape((lab.shape[0] * lab.shape[1], lab.shape[2]))
 
         #1. Find the location of the closest colour to the 7 lesion colours for k-means starting locations
@@ -155,8 +160,6 @@ class Colour:
             cv2.rectangle(hist_bar, (int(startX), 0), (int(endX), 50),
             colour.astype("uint8").tolist(), -1)
             startX = endX
-
-        
 
 
         #plt.figure(figsize=(15,15))
@@ -220,13 +223,11 @@ class Colour:
 
 
     def run(self, _image, _masked_image, _mask, _colours = 6):
-        
-        img = cv2.cvtColor(_masked_image, cv2.COLOR_BGR2RGB)
-
+    
         #Image loaded as BGR, changes it to RGB
         #img = img.astype("float32") / 255
          
-        lab = color.rgb2lab(img)
+        lab = color.rgb2lab(_masked_image)
 
         #draw_image(_masked_image)
         

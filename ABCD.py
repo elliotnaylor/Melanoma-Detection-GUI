@@ -84,7 +84,7 @@ class ABCD_Rules:
         Uncaption when training new Bayesian network, needs 'csv_path'
         file with file names in first column, see file.
         '''
-        #self.generateMetdata()
+        self.generateMetdata()
 
         #Train bayesian network based on the provided metadata
         self.Bf = bayesianFusion(self.save_path)
@@ -101,8 +101,9 @@ class ABCD_Rules:
             
             lesion_path = self.folder_path + 'removed/' + array[i][0] + '.jpg'
 
-            img = cv2.imread(lesion_path)
-            
+            img = Image.open(lesion_path)
+            img = np.array(img)
+            #img = img[np.newaxis, ...] #Prediction requires 
 
             #Segment
             img_array.append(img)
@@ -110,9 +111,12 @@ class ABCD_Rules:
         img_array = np.array(img_array)
         
         masks, masked = self.getSegmentation(img_array, 'skin_lesion.h5')
-        
+
+
         for i in range(0, len(masks)):
             
+            #draw_image(masked[i])
+
             #Gets asymmetry of image, needs img, mask, and masked images
             dataH, dataV, asymmetry = self.asymmetry.run(img_array[i], masked[i], masks[i])
 
@@ -123,14 +127,23 @@ class ABCD_Rules:
             colours = [0, 0, 0, 0, 0, 0]
             number_colours = self.colour.run(img_array[i], masked[i], masks[i])
 
+            number = 0
+
             #Label that the colour exists in order of white, red, light_brown, dark brown, blue-gray and black
             for j in range(0, len(number_colours)):
                 colours[number_colours[j]] = 1
+                if number_colours[j] > 0:
+                    number += 1
 
+            array[i+1][3] = number
+
+            '''
             for j in range(0, len(colours)):
                 array[i+1][j+3] = colours[j]
+            '''
+            
 
-
+            
             '''
             CSV is already populated with dermoscopic structures.
             Will be replaced with automatic detection in the future.
@@ -198,7 +211,7 @@ class ABCD_Rules:
         
         file_name = os.path.splitext(os.path.basename(file_path))[0]
 
-        #Load image using Pillow, loading using OpenCV produces different RGB values
+        #Load image using Pillow, loading using OpenCV produces BGR values
         img = Image.open(file_path)
         img = np.array(img)
         img = img[np.newaxis, ...] #Prediction requires an array of image

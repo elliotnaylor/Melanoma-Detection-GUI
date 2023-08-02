@@ -110,6 +110,15 @@ class Asymmetry:
         return asymmetry
 
     def shapeSymmetry(self, image, center):
+
+        '''
+        from skimage.transform import radon
+        img = imread('squares centre.bmp', as_gray=True)
+        angles = np.linspace(0., 180., max(img.shape), endpoint=False)
+        sinogram = radon(img, theta=angles)
+        '''
+
+
         #Crop image into four halves relating to vertical and horizontal lines
         h1 = image[0:center[1], 0:image.shape[1]]
         h2 = image[center[1]:image.shape[0], 0:image.shape[1]]

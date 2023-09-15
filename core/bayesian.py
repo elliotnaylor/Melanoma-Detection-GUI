@@ -9,7 +9,7 @@ class bayesianFusion:
         #1. Importing data
         csv = np.genfromtxt (path, delimiter=",")
 
-        sampleData = ['Diagnosis', 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
+        sampleData = ['Diagnosis', 'Asymmetry', 'White', 'Red', 'LightBrown', 'DarkBrown', 'BlueGray', 'Black', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
 
         self.df = pd.DataFrame(csv, columns = sampleData)
 
@@ -18,6 +18,12 @@ class bayesianFusion:
 
         edges = [
             ('Diagnosis', 'Asymmetry'),
+            ('Diagnosis', 'White'),
+            ('Diagnosis', 'Red'),
+            ('Diagnosis', 'LightBrown'),
+            ('Diagnosis', 'DarkBrown'),
+            ('Diagnosis', 'BlueGray'),
+            ('Diagnosis', 'Black'),
             ('Diagnosis','Globules'), 
             ('Diagnosis', 'Milia'), 
             ('Diagnosis','Negative'), 

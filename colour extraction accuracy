@@ -1,0 +1,81 @@
+from PIL import Image, ImageTk
+
+import numpy as np
+import cv2
+
+
+from core.colour import Colour
+#from core.asymmetry import Asymmetry
+from utils.cv import *
+from utils.plot import draw_svm_boundries
+from utils.xlrd import *
+
+from dataset.load_PH2 import PH2
+
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+from sklearn.inspection import DecisionBoundaryDisplay
+import pickle
+
+import matplotlib.pyplot as plt
+
+import os
+
+ph2 = PH2()
+c = Colour()
+
+images_tk = ph2.load_images_tk()
+images = ph2.load_images()
+masks = ph2.load_masks()
+ground = ph2.load_colours()
+
+masked = []
+cropped_mask = []
+
+def organise_colours(number_colours):
+
+    colours = [0, 0, 0, 0, 0, 0]
+
+    #Label that the colour exists in order of white, red, light_brown, dark brown, blue-gray and black
+    for j in range(0, len(number_colours)):
+
+        colours[number_colours[j]] = 1
+
+    return colours
+
+unique_colours = []
+
+#Crop the image to the white mask border in the image
+for i in range(0, len(masks)):
+    x, y, w, h = crop_mask(masks[i]) #converts to gray, finds non-zero pixels and returns x, y, w, and h
+    cropped_mask.append(masks[i][y:y+h, x:x+w])
+    cropped_img = images[i][y:y+h, x:x+w]
+
+    element = apply_mask_cv(cropped_img, cropped_mask[i])
+
+    masked.append(element)
+
+    cv2.imshow("Cropped", masked[i]) # Show it
+
+    #White, red, light_brown, dark brown, blue-gray and black (0 not present, 1 present)
+    number_colours = c.run(cropped_img, masked[i], masks[i])
+    
+    #Remove any values that aren't visible
+    unique_colours.append(np.unique(number_colours))
+
+ground = np.array(ground).astype(int)
+unique_colours = np.array(unique_colours).astype(int)
+
+new_ground = []
+new_colours = []
+
+for i in range(0, len(ground)):
+    new_ground.append(organise_colours(ground[i]))
+    new_colours.append(organise_colours(unique_colours[i]))
+
+
+
+cv2.waitKey(0)
+

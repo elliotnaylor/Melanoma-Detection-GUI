@@ -12,6 +12,8 @@ from core.border import Border
 from core.colour import Colour
 from core.segmentation import *
 from core.bayesian import *
+from utils.draw import *
+from utils.plot import *
 
 
 from utils.cv import *
@@ -67,11 +69,10 @@ class ABCD_Rules:
 
     segmentation = Segmentation()
     asymmetry = Asymmetry()
-    border = Border()
+    #border = Border()
     colour = Colour()
 
     structure = ['Diagnosis', 'Asymmetry', 'Globules', 'Milia', 'Negative', 'Pigment', 'Streaks']
-
 
     '''
     Train bayesian network based on pre-compiled csv file
@@ -83,7 +84,7 @@ class ABCD_Rules:
         Uncaption when training new Bayesian network, needs 'csv_path'
         file with file names in first column, see file.
         '''
-        #self.generateMetdata()
+        self.generateMetdata()
 
         #Train bayesian network based on the provided metadata
         self.Bf = bayesianFusion(self.save_path)
@@ -100,33 +101,60 @@ class ABCD_Rules:
             
             lesion_path = self.folder_path + 'removed/' + array[i][0] + '.jpg'
 
-            img = cv2.imread(lesion_path)
+            img = Image.open(lesion_path)
+            img = np.array(img)
+            #img = img[np.newaxis, ...] #Prediction requires 
 
             #Segment
             img_array.append(img)
         
         img_array = np.array(img_array)
         
-        masks, masked = self.getSegmentation(img_array)
-        
+        masks, masked = self.getSegmentation(img_array, 'skin_lesion.h5')
+
+
         for i in range(0, len(masks)):
+            
+            #draw_image(masked[i])
+
             #Gets asymmetry of image, needs img, mask, and masked images
             dataH, dataV, asymmetry = self.asymmetry.run(img_array[i], masked[i], masks[i])
 
             array[i+1][2] = asymmetry
-            print("Finished image: " + i + " out of " + len(masks))
+            #print("Finished image: " + i + " out of " + len(masks))
 
+            #White, red, light_brown, dark brown, blue-gray and black (0 not present, 1 present)
+            colours = [0, 0, 0, 0, 0, 0]
+            number_colours = self.colour.run(img_array[i], masked[i], masks[i])
 
-        '''
-        CSV is already populated with dermoscopic structures.
-        Will be replaced with automatic detection in the future.
-        '''
+            number = 0
 
-        #Removing headers and filenames for bayesian network training
-        np.delete(array, 0, 0) #Delete headers
-        array[:,1:] #Remove column 0 containing all the names        
+            #Label that the colour exists in order of white, red, light_brown, dark brown, blue-gray and black
+            for j in range(0, len(number_colours)):
+                colours[number_colours[j]] = 1
+                if number_colours[j] > 0:
+                    number += 1
 
-        array_to_csv(array, self.save_path)
+            array[i+1][3] = number
+
+            '''
+            for j in range(0, len(colours)):
+                array[i+1][j+3] = colours[j]
+            '''
+            
+
+            
+            '''
+            CSV is already populated with dermoscopic structures.
+            Will be replaced with automatic detection in the future.
+            '''
+            
+            save = array
+            #Removing headers and filenames for bayesian network training
+            np.delete(save, 0, 0) #Delete headers
+            save[:,1:] #Remove column 0 containing all the names        
+
+            array_to_csv(save, self.save_path)
 
 
     '''
@@ -137,23 +165,38 @@ class ABCD_Rules:
     def getSegmentation(self, images, filename):
         mask_array = []
         masked_array = []
-
+        
         #Initalize SegNet
         masks = self.segmentation.segNet(images, self.model_path + filename)
         
+        threshmask = []
+
         #Convert float32 to uint8 and convert single pixel value to tuple
         masks *= 255
         masks = masks.astype(np.uint8)
 
-        for i in range(0, len(masks)):
+        #Threshold to make images either black or white and no inbetween
+        for m in masks:
+            ret, threshold = cv2.threshold(m, 15, 255, cv2.THRESH_BINARY)
+            threshmask.append(threshold)
 
+        threshmask = np.array(threshmask)
+        
+
+        for i in range(0, len(threshmask)):
+            
             #Convert into an RGB mask
-            rgb_mask = cv2.cvtColor(masks[i], cv2.COLOR_GRAY2BGR)
+            rgb_mask = cv2.cvtColor(threshmask[i], cv2.COLOR_GRAY2BGR)
             
             mask_array.append(rgb_mask)
 
+            masked = apply_mask_cv(images[i], rgb_mask)
+
+            #draw_image(masked)
+
             #Apply a mask using OpenCV
-            masked_array.append(apply_mask_cv(images[i], rgb_mask))
+            masked_array.append(masked)
+            
             
         return mask_array, masked_array
 
@@ -168,10 +211,16 @@ class ABCD_Rules:
         
         file_name = os.path.splitext(os.path.basename(file_path))[0]
 
-        #Load image using Pillow, loading using OpenCV produces different RGB values
+        #Load image using Pillow, loading using OpenCV produces BGR values
         img = Image.open(file_path)
         img = np.array(img)
         img = img[np.newaxis, ...] #Prediction requires an array of image
+
+        #Image loaded as BGR, changes it to RGB
+        #img = img[:,:,::-1]
+
+        #plt.imshow(img)
+        #plt.show()
 
         #Segment
         masks, masked = self.getSegmentation(img, 'skin_lesion.h5')
@@ -179,33 +228,30 @@ class ABCD_Rules:
         #Asymmetry
         dataH, dataV, asymmetry = self.asymmetry.run(img[0], masked[0], masks[0])
 
+        
         variables.append(asymmetry)
 
         #Border
-        border = self.border.run(masks[0])
+        #border = self.border.run(masks[0])
 
         #Colour
-        position, number_colours = self.colour.run(img[0], masked[0], masks[0])
+        number_colours = self.colour.run(img[0], masked[0], masks[0])
 
-        res = 1
-
-        #Iterate thorugh all elements and count if any differnt variable are found
-        for i in range(1, len(number_colours)):
-            j = 0
-            
-            for j in range(i):
-                if (number_colours[i] == number_colours[j]):
-                    break
-
-            #If not the same location in the array then add one
-            if (i == j + 1):
-                res += 1
+        #White, red, light_brown, dark brown, blue-gray and black (0 not present, 1 present)
+        colours = [0, 0, 0, 0, 0, 0]
         
-        #Dermoscopic structure
-        dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
+        #Label that the colour exists in order of white, red, light_brown, dark brown, blue-gray and black
+        for i in range(0, len(number_colours)):
+            colours[number_colours[i]] = 1
+
+        for c in colours:
+            variables.append(c)
 
         #Numpy function to pass CSV file into an array
         array = csv_to_array(self.csv_path)
+
+        #Dermoscopic structure
+        dermo_list = ['globules','milia_like_cyst','negative_network', 'pigment_network','streaks']
 
         '''
         Get dermoscopic structures, currently on whether there 
@@ -233,7 +279,6 @@ class ABCD_Rules:
         variables[4] = white_pixels(p_masks[0])
 
         return masks[0], p_masks[0], variables
-
 
     '''
     Variables are values in the interface, that are saved and used for

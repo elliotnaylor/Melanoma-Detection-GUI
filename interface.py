@@ -251,7 +251,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         
         #Set boxes to the values automatically detected using analyseImage()
         self.asymmetry_name_entry.delete(0, tk.END)
-        self.asymmetry_name_entry.insert(0, variables[0]+1)
+        self.asymmetry_name_entry.insert(0, variables[0])
 
         self.globules_combo.current(variables[1]+1)
         self.milia_combo.current(variables[2]+1)

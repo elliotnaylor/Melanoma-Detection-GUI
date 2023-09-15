@@ -2,12 +2,13 @@ from PIL import Image, ImageTk
 
 import numpy as np
 import cv2
+
 from core.asymmetry import Asymmetry
 from utils.cv import *
 from utils.plot import draw_svm_boundries
 from utils.xlrd import *
 
-from load_PH2 import PH2
+from dataset.load_PH2 import PH2
 
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -90,12 +91,14 @@ score2 = asymmetry_combined(tds2_masked, tds2_mask, 20)
 
 #Get minimum, maximum, lower quartile, upper quartile, and median
 
-#Create box plot
-plot = plt.boxplot([score0, score2])
+fig, ax = plt.subplots()
 
-plot.set_title('Range of Symmetrical and Asymmetrical')
-plot.set_ylabel('Euclidean Distance (LAB)')
-plot.set_xlabel('Symmetry')
+#Create box plot
+bp = ax.boxplot([score0, score2], showfliers=False)
+
+ax.set_title('Range of Symmetrical and Asymmetrical')
+ax.set_ylabel('Euclidean Distance (LAB)')
+ax.set_xlabel('Symmetry')
 plt.show()
 
     #vertical_book = xlwt.Workbook()

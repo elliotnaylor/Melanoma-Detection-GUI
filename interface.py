@@ -22,7 +22,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
     tk_image = []
 
-    IMG_SHAPE = (360, 360)
+    IMG_SHAPE = (700, 700)
     
     def prepareImage(self, img):
         img.thumbnail(self.IMG_SHAPE)
@@ -143,21 +143,22 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         load_button.grid(row=0, column=1, sticky="news", padx=20, pady=5)
 
         lesion_info_frame = tk.LabelFrame(container, text="Patient information")
-        lesion_info_frame.grid(row=1, column=1, padx=0, pady=10)
-        lesion_name_label = tk.Label(lesion_info_frame, width=100, height=30, text="No data loaded")
-        lesion_name_label.grid(row=1, column=0, padx=20, pady=5)
+        lesion_info_frame.grid(row=0, column=1, padx=20, pady=10, rowspan=3, columnspan=2)
+
+        lesion_name_label = tk.Label(lesion_info_frame, text="No image loaded")
+        lesion_name_label.grid(row=0, column=0, padx=0, pady=0, columnspan=2, rowspan=2)
 
         self.lesion_name_label = tk.Label(lesion_info_frame, text="No image loaded")
-        self.lesion_name_label.grid(row=1, column=0, padx=20, pady=5)
+        self.lesion_name_label.grid(row=0, column=0, padx=0, pady=0, columnspan=2, rowspan=2)
 
-        self.seg_name_label = tk.Label(lesion_info_frame, text="No image loaded")
-        self.seg_name_label.grid(row=2, column=0, padx=20, pady=5)
+        #self.seg_name_label = tk.Label(lesion_info_frame, text="No image loaded")
+        #self.seg_name_label.grid(row=2, column=0, padx=20, pady=5)
 
-        self.masks_combo = ttk.Combobox(lesion_info_frame, values=MASK_DROP_DOWN)
-        self.masks_combo.grid(row=3, column=0, padx=10, pady=5)
+        #self.masks_combo = ttk.Combobox(lesion_info_frame, values=MASK_DROP_DOWN)
+        #self.masks_combo.grid(row=3, column=0, padx=10, pady=5)
 
-        more_info_button = tk.Button(lesion_info_frame, text="show", command=lambda : self.load_mask())
-        more_info_button.grid(row = 3, column = 1, padx=10, pady=5)
+        #more_info_button = tk.Button(lesion_info_frame, text="show", command=lambda : self.load_mask())
+        #more_info_button.grid(row = 3, column = 1, padx=10, pady=5)
 
     def run(self):
         print("Run pressed")
@@ -173,48 +174,8 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
         weights = self.predictImage(variables)
         
-        return self.load_graph(weights)
-
-    def load_graph(self, value):
-
-        data = {'Benign Naevi':value[0], 'Seborriec':value[1], 'Melanoma':value[2]}        
-
-        courses = list(data.keys())
-        values = list(data.values())
-
-        fig, ax = plt.subplots(figsize=(16,10))
-
-        #Rotate the bar chart horizontally
-        ax.barh(courses, values)
-
-        #Add grid lines
-        ax.grid(color ='grey',
-        linestyle ='-.', linewidth = 0.5,
-        alpha = 0.2)
-
-        #Displays the number alongside the bar graph
-        for i in ax.patches:
-            plt.text(i.get_width()+0.2, i.get_y()+0.5,
-                     str(round((i.get_width()), 2)),
-                     fontsize = 30, fontweight ='bold',
-                     color ='grey')
-            
+        return weights
     
-        '''
-        Saves the figure to a memory buffer
-        Opens it with 'Image' library
-        Displays the image to the screen
-        '''
-
-        image = self.plt2tk()
-        
-        self.tk_graph = self.prepareImage(image)
-
-
-        plt.clf()
-
-        return image
-
 
     def load_image(self):
         print("Load_Image pressed")
@@ -251,21 +212,28 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         
         #Display images in 'lesion_name_label' relating to combobox value
         
-        graph = self.run()
+        bayesian_weights = self.run()
         
+        data = {'Benign Naevi':bayesian_weights[0], 'Seborriec':bayesian_weights[1], 'Melanoma':bayesian_weights[2]}        
+
+        courses = list(data.keys())
+        values = list(data.values())
+
+        plt.axis('off')
 
         f, axarr = plt.subplots(2,2)
+        
 
         axarr[0,0].imshow(image)
         axarr[1,0].imshow(mask)
-        axarr[0,1].imshow(graph)
+        axarr[0,1].barh(courses, values)
 
         display_img = self.plt2tk()
-
-        self.tk_image = self.prepareImage(display_img)
-
-        #self.lesion_name_label.configure(image=self.tk_image)
-        self.lesion_info_frame.configure(image=self.tk_image)
+        
+        resized_image = display_img.resize((display_img.width, display_img.height))
+        self.tk_image = self.prepareImage(resized_image)
+        
+        self.lesion_name_label.configure(image=self.tk_image)
         
 
     #Checks combobox value and displays the corrisponding image

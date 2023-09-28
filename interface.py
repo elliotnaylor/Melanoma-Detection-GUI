@@ -21,6 +21,8 @@ def csv_to_array(path):
 class MainApplication(tk.Tk, ABCD_Rules) :
 
     tk_image = []
+    loaded_image = []
+    loaded_mask = []
 
     IMG_SHAPE = (700, 700)
     
@@ -45,6 +47,7 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
         # creating a frame and assigning it to container
         container = tk.Frame(self, height=400, width=600)
+
         # specifying the region where the frame is packed in root
         container.pack(side="top", fill="both", expand=True)
 
@@ -174,7 +177,23 @@ class MainApplication(tk.Tk, ABCD_Rules) :
 
         weights = self.predictImage(variables)
         
-        return weights
+        data = {'Benign Naevi':weights[0], 'Seborriec':weights[1], 'Melanoma':weights[2]}        
+
+        courses = list(data.keys())
+        values = list(data.values())
+        
+        f, axarr = plt.subplots(2,2)
+        
+        axarr[0,0].imshow(self.loaded_image)
+        axarr[1,0].imshow(self.loaded_mask)
+        axarr[0,1].barh(courses, values)
+
+        display_img = self.plt2tk()
+        
+        resized_image = display_img.resize((display_img.width, display_img.height))
+        combined_image = self.prepareImage(resized_image)
+        
+        self.lesion_name_label.configure(image=combined_image)
     
 
     def load_image(self):
@@ -191,14 +210,9 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         mask, p_mask, variables = self.analyseImage(filepath)
         
         #Save masks and lablelled images for displaying
-        image = Image.open(filepath)
-        self.tk_image = self.prepareImage(image)
-
-        mask = Image.fromarray(mask)
-        self.tk_mask = self.prepareImage(mask)
-        
+        self.loaded_image = Image.open(filepath)
+        self.loaded_mask = Image.fromarray(mask)
         p_mask = Image.fromarray(p_mask)
-        self.tk_pigment = self.prepareImage(p_mask)
 
         #Set boxes to the values automatically detected using analyseImage()
         self.asymmetry_name_entry.delete(0, tk.END)
@@ -212,28 +226,9 @@ class MainApplication(tk.Tk, ABCD_Rules) :
         
         #Display images in 'lesion_name_label' relating to combobox value
         
-        bayesian_weights = self.run()
+        self.run()
         
-        data = {'Benign Naevi':bayesian_weights[0], 'Seborriec':bayesian_weights[1], 'Melanoma':bayesian_weights[2]}        
-
-        courses = list(data.keys())
-        values = list(data.values())
-
-        plt.axis('off')
-
-        f, axarr = plt.subplots(2,2)
         
-
-        axarr[0,0].imshow(image)
-        axarr[1,0].imshow(mask)
-        axarr[0,1].barh(courses, values)
-
-        display_img = self.plt2tk()
-        
-        resized_image = display_img.resize((display_img.width, display_img.height))
-        self.tk_image = self.prepareImage(resized_image)
-        
-        self.lesion_name_label.configure(image=self.tk_image)
         
 
     #Checks combobox value and displays the corrisponding image

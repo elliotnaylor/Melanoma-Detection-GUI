@@ -118,7 +118,7 @@ class ABCD_Rules:
             #draw_image(masked[i])
 
             #Gets asymmetry of image, needs img, mask, and masked images
-            dataH, dataV, asymmetry = self.asymmetry.run(img_array[i], masked[i], masks[i])
+            dataH, dataV, locH, locV, asymmetry = self.asymmetry.run(img_array[i], masked[i], masks[i])
 
             array[i+1][2] = asymmetry
             #print("Finished image: " + i + " out of " + len(masks))

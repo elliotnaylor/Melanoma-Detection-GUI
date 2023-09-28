@@ -1,3 +1,5 @@
+import importParent
+
 from PIL import Image, ImageTk
 
 import numpy as np
@@ -18,6 +20,7 @@ from sklearn.inspection import DecisionBoundaryDisplay
 import pickle
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import os
 
@@ -33,7 +36,7 @@ masked = []
 cropped_mask = []
 
 #Crop the image to the white mask border in the image
-for i in range(0, len(masks)):
+for i in range(0, 5): #len(masks)):
     x, y, w, h = crop_mask(masks[i]) #converts to gray, finds non-zero pixels and returns x, y, w, and h
     cropped_mask.append(masks[i][y:y+h, x:x+w])
     cropped_img = images[i][y:y+h, x:x+w]
@@ -51,7 +54,7 @@ tds1_masked = []
 tds2_mask = []
 tds2_masked = []
 
-for i in range(0, len(ground)):
+for i in range(0, 5): #len(ground)):
     if ground[i] == 0:
         tds0_mask.append(cropped_mask[i])
         tds0_masked.append(masked[i])
@@ -67,7 +70,7 @@ def asymmetry_combined(tds_masked, tds_mask, compact):
     dataX = []
     #for j in range(5, 100, 5):
     for i in range(0, len(tds_masked)):
-        dataH, dataV, asymmetry = a.run(images[i], tds_masked[i], tds_mask[i], compactness=compact)
+        dataH, dataV, locH, locV, asymmetry = a.run(images[i], tds_masked[i], tds_mask[i], compactness=compact)
         data.append(asymmetry)
     
         print(asymmetry)
@@ -80,35 +83,28 @@ score0 = asymmetry_combined(tds0_masked, tds0_mask, 20)
 #score1 = asymmetry_combined(tds1_masked, tds1_mask, 20)
 score2 = asymmetry_combined(tds2_masked, tds2_mask, 20)
 
-#for i in range(0, len(tds2_mask)):
-#    dataH, dataV, asymmetry = a.run(images[i], tds0_masked#[i], tds0_mask[i], compactness=20)
-#    data.append(asymmetry)
-#
-#    print(asymmetry)
-#
-#    dataX.append(dataH)
-#    dataY.append(dataV)
-
 #Get minimum, maximum, lower quartile, upper quartile, and median
 
-fig, ax = plt.subplots()
+f, ax = plt.subplots(2,2)
+
+a = np.random.random((16,16))
 
 #Create box plot
-bp = ax.boxplot([score0, score2], showfliers=False)
+ax[0, 0].boxplot([score0, score2], showfliers=False)
 
-ax.set_title('Range of Symmetrical and Asymmetrical')
-ax.set_ylabel('Euclidean Distance (LAB)')
-ax.set_xlabel('Symmetry')
+ax[0, 1].imshow(a, cmap='hot', interpolation='nearest')
+
+ax[0, 0].set_title('Range of Symmetrical and Asymmetrical')
+ax[0, 0].set_ylabel('Euclidean Distance (LAB)')
+ax[0, 0].set_xlabel('Symmetry')
 plt.show()
 
-    #vertical_book = xlwt.Workbook()
-    #horiztonal_book = xlwt.Workbook()
-    #ground_book = xlwt.Workbook()
-
-    #save_output2d(dataX, 'Horizontal{j}', horiztonal_book)
-    #save_output2d(dataY, 'Vertical{j}', vertical_book)
-    #save_output1d(data, 'Results{j}', ground_book)
-
-    #vertical_book.save('vertical_output.xls')
-    #horiztonal_book.save('Horiztonal_output.xls')
-    #ground_book.save('ground_output.xls')
+#vertical_book = xlwt.Workbook()
+#horiztonal_book = xlwt.Workbook()
+#ground_book = xlwt.Workbook()
+#save_output2d(dataX, 'Horizontal{j}', horiztonal_book)
+#save_output2d(dataY, 'Vertical{j}', vertical_book)
+#save_output1d(data, 'Results{j}', ground_book)
+#vertical_book.save('vertical_output.xls')
+#horiztonal_book.save('Horiztonal_output.xls')
+#ground_book.save('ground_output.xls')

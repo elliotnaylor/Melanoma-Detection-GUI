@@ -257,6 +257,6 @@ class Asymmetry:
         #draw_image(lab)
         #draw_comparison(h_colour, v_colour, self.THRESH)
 
-        return h_colour, v_colour, asymmetry
+        return h_colour, h_pos, v_colour, v_pos, asymmetry
         
 

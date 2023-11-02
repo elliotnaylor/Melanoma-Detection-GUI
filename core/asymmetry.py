@@ -136,16 +136,16 @@ class Asymmetry:
         x_v1, y_v1 = evecs[:, sort_indices[0]]  #Eigenvector with largest eigenvalue
         x_v2, y_v2 = evecs[:, sort_indices[1]]
 
-        scale = 20
-        plt.plot(x, y, 'k.')
-        plt.plot([x_v1*-scale*2, x_v1*scale*2],
-         [y_v1*-scale*2, y_v1*scale*2], color='red')
-        plt.plot([x_v2*-scale, x_v2*scale],
-         [y_v2*-scale, y_v2*scale], color='blue')
-        plt.axis('equal')
-        plt.gca().invert_yaxis()  #Match the image system with origin at top left
+        #scale = 20
+        #plt.plot(x, y, 'k.')
+        #plt.plot([x_v1*-scale*2, x_v1*scale*2],
+        # [y_v1*-scale*2, y_v1*scale*2], color='red')
+        #plt.plot([x_v2*-scale, x_v2*scale],
+        # [y_v2*-scale, y_v2*scale], color='blue')
+        #plt.axis('equal')
+        #plt.gca().invert_yaxis()  #Match the image system with origin at top left
         
-        plt.show()
+        #plt.show()
 
         theta = np.arctan((x_v1)/(y_v1))  
 
@@ -285,8 +285,8 @@ class Asymmetry:
         mask_rotation = rotate_bound(gray_mask,  math.degrees(theta)) #cv2.warpAffine(gray_mask, rotation_matrix, gray_mask.shape[1::-1], flags=cv2.INTER_LINEAR)
         colour_rotation = rotate_bound(bgr, math.degrees(theta))
 
-        plt.imshow(image_rotation)
-        plt.show()
+        #plt.imshow(image_rotation)
+        #plt.show()
 
         #Recalculate center of mass from the newly rotated image (rotate_bound function resizes image, making it difficult to translate position)
         center, phi = self.moments(mask_rotation)

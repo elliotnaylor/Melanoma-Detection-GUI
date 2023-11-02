@@ -6,6 +6,7 @@ from skimage.segmentation import mark_boundaries
 
 from scipy.spatial import ConvexHull
 
+
 from utils.cv import *
 from utils.draw import *
 from utils.math import *
@@ -59,9 +60,9 @@ class Asymmetry:
                 locations.append((y, x))
         
         #Display image with regions
-        #for props in regions:
-        #    cy, cx = props.centroid
-        #    plt.plot(cx, cy)
+        for props in regions:
+            cy, cx = props.centroid
+            plt.plot(cx, cy)
 
         #plt.imshow(mark_boundaries(image, labels))
         #plt.show()
@@ -81,6 +82,8 @@ class Asymmetry:
 
         return locations1, locations2
 
+
+    #Old version
     def moments(self, _image):
         moments = cv2.moments(_image)
 
@@ -96,6 +99,58 @@ class Asymmetry:
             phi = 0
         
         return center, phi
+    
+
+    def raw_moment(self, data, i_order, j_order):
+        nrows, ncols = data.shape
+        y_indices, x_indicies = np.mgrid[:nrows, :ncols]
+        return (data * x_indicies**i_order * y_indices**j_order).sum()
+
+    def moments_cov(self, data):
+        data_sum = data.sum()
+        m10 = self.raw_moment(data, 1, 0)
+        m01 = self.raw_moment(data, 0, 1)
+        x_centroid = m10 / data_sum
+        y_centroid = m01 / data_sum
+        centroid = (x_centroid, y_centroid)
+        u11 = (self.raw_moment(data, 1, 1) - x_centroid * m01) / data_sum
+        u20 = (self.raw_moment(data, 2, 0) - x_centroid * m10) / data_sum
+        u02 = (self.raw_moment(data, 0, 2) - y_centroid * m01) / data_sum
+        cov = np.array([[u20, u11], [u11, u02]])
+
+        return centroid, cov
+
+    def moments2(self, _image):
+        y, x = np.nonzero(_image)
+        x = x - np.mean(x)
+        y = y - np.mean(y)
+
+        #centroid, cov = self.moments_cov(_image)
+        #evals, evecs = np.linalg.eig(cov)
+        
+        coords = np.vstack([x, y])
+        cov = np.cov(coords)
+        evals, evecs = np.linalg.eig(cov)
+        
+        sort_indices = np.argsort(evals)[::-1]
+        x_v1, y_v1 = evecs[:, sort_indices[0]]  #Eigenvector with largest eigenvalue
+        x_v2, y_v2 = evecs[:, sort_indices[1]]
+
+        scale = 20
+        plt.plot(x, y, 'k.')
+        plt.plot([x_v1*-scale*2, x_v1*scale*2],
+         [y_v1*-scale*2, y_v1*scale*2], color='red')
+        plt.plot([x_v2*-scale, x_v2*scale],
+         [y_v2*-scale, y_v2*scale], color='blue')
+        plt.axis('equal')
+        plt.gca().invert_yaxis()  #Match the image system with origin at top left
+        
+        plt.show()
+
+        theta = np.arctan((x_v1)/(y_v1))  
+
+        return (x, y), theta
+        
 
     def difference(self, difference, thresh):
         over = 0
@@ -117,7 +172,6 @@ class Asymmetry:
         angles = np.linspace(0., 180., max(img.shape), endpoint=False)
         sinogram = radon(img, theta=angles)
         '''
-
 
         #Crop image into four halves relating to vertical and horizontal lines
         h1 = image[0:center[1], 0:image.shape[1]]
@@ -225,11 +279,14 @@ class Asymmetry:
         gray_mask = bgr2gray_cv(_mask)
 
         #Center of mass
-        center, phi = self.moments(gray)
+        center, theta = self.moments2(gray)
 
-        image_rotation = rotate_bound(gray, math.degrees(-phi)) #cv2.warpAffine(gray, rotation_matrix, gray.shape[1::-1], flags=cv2.INTER_LINEAR)
-        mask_rotation = rotate_bound(gray_mask,  math.degrees(-phi)) #cv2.warpAffine(gray_mask, rotation_matrix, gray_mask.shape[1::-1], flags=cv2.INTER_LINEAR)
-        colour_rotation = rotate_bound(bgr, math.degrees(-phi))
+        image_rotation = rotate_bound(gray, math.degrees(theta)) #cv2.warpAffine(gray, rotation_matrix, gray.shape[1::-1], flags=cv2.INTER_LINEAR)
+        mask_rotation = rotate_bound(gray_mask,  math.degrees(theta)) #cv2.warpAffine(gray_mask, rotation_matrix, gray_mask.shape[1::-1], flags=cv2.INTER_LINEAR)
+        colour_rotation = rotate_bound(bgr, math.degrees(theta))
+
+        plt.imshow(image_rotation)
+        plt.show()
 
         #Recalculate center of mass from the newly rotated image (rotate_bound function resizes image, making it difficult to translate position)
         center, phi = self.moments(mask_rotation)
@@ -258,5 +315,3 @@ class Asymmetry:
         #draw_comparison(h_colour, v_colour, self.THRESH)
 
         return h_colour, h_pos, v_colour, v_pos, asymmetry
-        
-

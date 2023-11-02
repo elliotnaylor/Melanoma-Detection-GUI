@@ -97,7 +97,7 @@ ax[0, 1].imshow(a, cmap='hot', interpolation='nearest')
 ax[0, 0].set_title('Range of Symmetrical and Asymmetrical')
 ax[0, 0].set_ylabel('Euclidean Distance (LAB)')
 ax[0, 0].set_xlabel('Symmetry')
-plt.show()
+
 
 #vertical_book = xlwt.Workbook()
 #horiztonal_book = xlwt.Workbook()

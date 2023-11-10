@@ -23,7 +23,7 @@ class Asymmetry:
     
     #https://www.pyimagesearch.com/2017/01/02/rotate-images-correctly-with-opencv-and-python
 
-    def superpixel_centroids(self, image, mask, number_segments, compactness=20):
+    def superpixel_centroids(self, image, mask, number_segments, compactness):
         locations = []
 
         #Find area of skin lesion, change 'n_segments' for less with larger skin lesion and more with smaller (equal segments)
@@ -55,8 +55,8 @@ class Asymmetry:
             x = int(round(x))
             y = int(round(y))
 
-            #Check which centroids are wihtin the area of the mask
-            if mask[x, y] > 0 and y < superpixels.shape[0] and x < superpixels.shape[1]: #regions returns some values outside of the size of the image
+            #Check which centroids are within the area of the mask
+            if y < superpixels.shape[0] and x < superpixels.shape[1]: #regions returns some values outside of the size of the image
                 locations.append((y, x))
         
         #Display image with regions
@@ -64,8 +64,8 @@ class Asymmetry:
             cy, cx = props.centroid
             plt.plot(cx, cy)
 
-        #plt.imshow(mark_boundaries(image, labels))
-        #plt.show()
+        plt.imshow(mark_boundaries(image, labels))
+        plt.show()
 
         return superpixels, locations
 
@@ -255,7 +255,6 @@ class Asymmetry:
                 #JND = square_root((L_b1 - L_b2)^2 + (A_b1 - A_b2)^2 + (B_b1 - B_b2)^2)
                 dis = euclidean3d(image[h[1], h[0]], image[h_1[1], h_1[0]])
 
-                
                 # < 3 = not visible, 3<*< = 6 barely perceptible, > 6 perceptable (visible to the human eye)
                 difference.append(dis)
                 positions.append((h, h_1))
@@ -272,7 +271,7 @@ class Asymmetry:
         #Bag of features
         #Bhattacharyya distance
 
-    def run(self, _image, _masked_image, _mask, compactness = 20):
+    def run(self, _image, _masked_image, _mask, compactness = 100):
 
         bgr = _masked_image
         gray = bgr2gray_cv(_masked_image)
@@ -289,7 +288,7 @@ class Asymmetry:
         #plt.show()
 
         #Recalculate center of mass from the newly rotated image (rotate_bound function resizes image, making it difficult to translate position)
-        center, phi = self.moments(mask_rotation)
+        center, phi = self.moments2(mask_rotation)
         
         #h_shape, v_shape = self.shapeSymmetry(mask_rotation, center)
 

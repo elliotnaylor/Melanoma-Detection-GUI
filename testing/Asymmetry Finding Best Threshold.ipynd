@@ -54,7 +54,7 @@ tds1_masked = []
 tds2_mask = []
 tds2_masked = []
 
-for i in range(0, len(ground)):
+for i in range(0, len(cropped_mask)):
     if ground[i] == 0:
         tds0_mask.append(cropped_mask[i])
         tds0_masked.append(masked[i])
@@ -82,9 +82,19 @@ def asymmetry_combined(tds_masked, tds_mask, compact):
 
     return dataX
 
-score0 = asymmetry_combined(tds0_masked, tds0_mask, 20)
-score1 = asymmetry_combined(tds1_masked, tds1_mask, 20)
-score2 = asymmetry_combined(tds2_masked, tds2_mask, 20)
+compactness = 10
+
+score0 = asymmetry_combined(tds0_masked, tds0_mask, compactness)
+score1 = asymmetry_combined(tds1_masked, tds1_mask, compactness)
+score2 = asymmetry_combined(tds2_masked, tds2_mask, compactness)
+
+score0 = np.rint(score0)
+score1 = np.rint(score1)
+score2 = np.rint(score2)
+
+score0 = score0[~np.isnan(score0)]
+score1 = score1[~np.isnan(score1)]
+score2 = score2[~np.isnan(score2)]
 
 #Get minimum, maximum, lower quartile, upper quartile, and median
 
@@ -95,9 +105,11 @@ a = np.random.random((16,16))
 #Create box plot
 ax.boxplot([score0, score2], showfliers=True)
 
+tds_names = ['', 'symmetrical', 'Asymmetrical']
+ax.set_xticks(np.arange(len(tds_names)), labels=tds_names)
 ax.set_title('Range of Symmetrical and Asymmetrical')
 ax.set_ylabel('Euclidean Distance (LAB)')
-ax.set_xlabel('Symmetry')
+ax.set_xlabel('Asymmetry')
 
 plt.show()
 
